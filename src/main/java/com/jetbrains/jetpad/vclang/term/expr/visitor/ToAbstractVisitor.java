@@ -273,8 +273,7 @@ public class ToAbstractVisitor extends BaseExpressionVisitor<Void, Abstract.Expr
     if (expr.isLiteral()) {
       return myFactory.makeNumLiteral(expr.getSuccs().intValue());
     }
-    // TODO
-    throw new UnsupportedOperationException("TODO");
+    return expr.toApp().accept(this, null);
   }
 
   private List<Abstract.Clause> visitBranch(BranchElimTreeNode branchNode) {

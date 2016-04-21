@@ -12,12 +12,12 @@ public class NatExpression extends Expression {
   private final Expression myExpression;
 
   public NatExpression(BigInteger mySuccs, Expression myExpression) {
+    assert mySuccs.compareTo(BigInteger.ONE) >= 0;
     this.mySuccs = mySuccs;
     this.myExpression = myExpression;
   }
 
   public Expression unsucc() {
-    assert mySuccs.compareTo(BigInteger.ZERO) > 0;
     if (mySuccs.equals(BigInteger.ONE)) {
       return myExpression;
     } else {
@@ -63,11 +63,6 @@ public class NatExpression extends Expression {
   public Expression getFunction() {
     AppExpression app = toApp();
     return app == null ? super.getFunction() : app.getFunction();
-  }
-
-  @Override
-  public ConCallExpression toConCall() {
-    return mySuccs.equals(BigInteger.ZERO) ? Zero() : null;
   }
 
   public boolean isLiteral() {

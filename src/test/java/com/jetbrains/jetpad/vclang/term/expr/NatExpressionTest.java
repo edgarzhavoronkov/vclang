@@ -1,10 +1,12 @@
 package com.jetbrains.jetpad.vclang.term.expr;
 
+import com.jetbrains.jetpad.vclang.term.Prelude;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.CheckTypeVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.NormalizeVisitor;
 import org.junit.Test;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.*;
@@ -17,7 +19,7 @@ public class NatExpressionTest {
     NatExpression e = res.expression.toNat();
     assertNotNull(e);
     assertTrue(e.isLiteral());
-    assertTrue(e.getSuccs().equals(BigInteger.TEN));
+    assertEquals(BigInteger.TEN, e.getSuccs());
   }
 
   @Test
@@ -34,4 +36,57 @@ public class NatExpressionTest {
     assertTrue(e2.isLiteral());
     assertEquals(BigInteger.valueOf(2), e2.getSuccs());
   }
+
+  @Test
+  public void testOldNewEquals() {
+    Expression e1 = Suc(Zero());
+    Expression e2 = Suc(1, Zero());
+    assertEquals(e1, e2);
+  }
+
+  @Test
+  public void testPositiveNatExprIsApp() {
+    Expression e = Suc(3, Zero());
+    Expression app = e.toApp();
+    assertNotNull(app);
+    assertEquals(app.getFunction(), ConCall(Prelude.SUC));
+    assertEquals(app.getArguments(), Collections.singletonList(Suc(2, Zero())));
+  }
+
+  @Test
+  public void testBigNat() {
+    Expression e = typeCheckExpr("1000000000", Nat()).expression;
+    NatExpression nat = e.toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(1000000000), nat.getSuccs());
+  }
+
+  @Test
+  public void testNormalizeSquash() {
+    Expression e = Suc(Suc(10, Suc(Suc(Suc(5, Suc(Zero()))))));
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(19), nat.getSuccs());
+  }
+
+  @Test
+  public void testNonLiteral() {
+    Expression e = typeCheckExpr("\\lam n => suc (suc (suc n))", null).expression;
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toLam().getBody().toNat();
+    assertNotNull(nat);
+    assertFalse(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(3), nat.getSuccs());
+  }
+
+  @Test
+  public void testParseSuc() {
+    Expression e = typeCheckExpr("suc 10", null).expression;
+    NatExpression nat = e.toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(11), nat.getSuccs());
+  }
+
 }
