@@ -80,13 +80,4 @@ public class NatExpressionTest {
     assertEquals(BigInteger.valueOf(3), nat.getSuccs());
   }
 
-  @Test
-  public void testParseSuc() {
-    Expression e = typeCheckExpr("suc 10", null).expression;
-    NatExpression nat = e.toNat();
-    assertNotNull(nat);
-    assertTrue(nat.isLiteral());
-    assertEquals(BigInteger.valueOf(11), nat.getSuccs());
-  }
-
 }
