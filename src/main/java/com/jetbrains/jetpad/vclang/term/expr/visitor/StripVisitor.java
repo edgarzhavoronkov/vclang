@@ -126,6 +126,11 @@ public class StripVisitor implements ExpressionVisitor<Void, Expression>, ElimTr
   }
 
   @Override
+  public Expression visitNat(NatExpression expr, Void params) {
+    return new NatExpression(expr.getSuccs(), expr.getExpression().accept(this, null));
+  }
+
+  @Override
   public BranchElimTreeNode visitBranch(BranchElimTreeNode branchNode, Void params) {
     BranchElimTreeNode result = new BranchElimTreeNode(branchNode.getReference(), branchNode.getContextTail());
     for (ConstructorClause clause : branchNode.getConstructorClauses()) {

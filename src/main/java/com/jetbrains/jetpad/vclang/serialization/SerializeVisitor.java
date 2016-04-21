@@ -16,6 +16,7 @@ import com.jetbrains.jetpad.vclang.term.pattern.elimtree.visitor.ElimTreeNodeVis
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -291,6 +292,20 @@ public class SerializeVisitor extends BaseExpressionVisitor<Void, Void> implemen
     myStream.write(16);
     expr.getExpression().accept(this, null);
     expr.getType().accept(this, null);
+    return null;
+  }
+
+  @Override
+  public Void visitNat(NatExpression expr, Void params) {
+    myStream.write(17);
+    byte[] bytes = expr.getSuccs().toByteArray();
+    try {
+      myDataStream.writeInt(bytes.length);
+      myDataStream.write(bytes);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    expr.getExpression().accept(this, null);
     return null;
   }
 

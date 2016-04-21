@@ -140,4 +140,9 @@ public class ConcreteExpressionFactory implements AbstractExpressionFactory {
   public Abstract.PatternArgument makePatternArgument(Abstract.Pattern pattern, boolean explicit) {
     return cPatternArg((Concrete.Pattern) pattern, explicit, false);
   }
+
+  @Override
+  public Abstract.NumericLiteral makeNumLiteral(int num) {
+    return cNum(num);
+  }
 }

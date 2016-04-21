@@ -876,10 +876,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<Expression, C
   @Override
   public Result visitNumericLiteral(Abstract.NumericLiteral expr, Expression expectedType) {
     int number = expr.getNumber();
-    Expression expression = Zero();
-    for (int i = 0; i < number; ++i) {
-      expression = Suc(expression);
-    }
+    Expression expression = Suc(number, Zero());
     return checkResult(expectedType, new Result(expression, Nat()), expr);
   }
 }

@@ -421,6 +421,18 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
   }
 
   @Override
+  public Boolean visitNat(NatExpression expr1, Expression expr2) {
+    // TODO understand what CompareVisitor do
+    NatExpression nat2 = expr2.toNat();
+    if (nat2 == null) return false;
+    if (!expr1.getSuccs().equals(nat2.getSuccs())) {
+      return false;
+    }
+    myCMP = Equations.CMP.EQ;
+    return compare(expr1.getExpression(), nat2.getExpression());
+  }
+
+  @Override
   public Boolean visitBranch(BranchElimTreeNode branchNode, ElimTreeNode node) {
     if (!(node instanceof BranchElimTreeNode))
       return false;

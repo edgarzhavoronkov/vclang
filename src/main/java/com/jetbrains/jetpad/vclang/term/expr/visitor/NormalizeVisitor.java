@@ -293,4 +293,19 @@ public class NormalizeVisitor extends BaseExpressionVisitor<NormalizeVisitor.Mod
   public Expression visitOfType(OfTypeExpression expr, Mode mode) {
     return mode == Mode.NF ? new OfTypeExpression(expr.getExpression().accept(this, mode), expr.getType()) : expr.getExpression().accept(this, mode);
   }
+
+  @Override
+  public Expression visitNat(NatExpression expr, Mode mode) {
+    if (mode == Mode.TOP)
+      return null;
+    if (mode == Mode.WHNF)
+      return expr;
+    Expression result = expr.getExpression().accept(this, mode);
+    NatExpression natResult = result.toNat();
+    if (natResult != null) {
+      return Suc(expr.getSuccs().add(natResult.getSuccs()), natResult.getExpression());
+    } else {
+      return Suc(expr.getSuccs(), natResult);
+    }
+  }
 }

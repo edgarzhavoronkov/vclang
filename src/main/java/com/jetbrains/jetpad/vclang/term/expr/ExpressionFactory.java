@@ -15,6 +15,7 @@ import com.jetbrains.jetpad.vclang.term.pattern.Patterns;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.*;
 import com.jetbrains.jetpad.vclang.typechecking.error.TypeCheckingError;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.jetbrains.jetpad.vclang.term.context.param.DependentLink.Helper.*;
@@ -203,6 +204,14 @@ public class ExpressionFactory {
 
   public static Expression Suc(Expression expr) {
     return Apps(Suc(), expr);
+  }
+
+  public static Expression Suc(BigInteger succs, Expression expr) {
+    return new NatExpression(succs ,expr);
+  }
+
+  public static Expression Suc(int succs, Expression expr) {
+    return succs == 0 ? expr : Suc(BigInteger.valueOf(succs), expr);
   }
 
   public static UniverseExpression Universe() {

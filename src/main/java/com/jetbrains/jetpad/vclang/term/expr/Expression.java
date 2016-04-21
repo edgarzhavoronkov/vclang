@@ -253,4 +253,8 @@ public abstract class Expression implements PrettyPrintable {
   public UniverseExpression toUniverse() {
     return null;
   }
+
+  public NatExpression toNat() {
+    return null;
+  }
 }

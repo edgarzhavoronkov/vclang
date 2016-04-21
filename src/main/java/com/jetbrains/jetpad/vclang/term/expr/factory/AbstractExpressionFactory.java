@@ -34,4 +34,5 @@ public interface AbstractExpressionFactory {
   Abstract.Pattern makeConPattern(String name, List<? extends Abstract.PatternArgument> args);
   Abstract.Pattern makeNamePattern(String name);
   Abstract.PatternArgument makePatternArgument(Abstract.Pattern pattern, boolean explicit);
+  Abstract.Expression makeNumLiteral(int num);
 }

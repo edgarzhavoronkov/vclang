@@ -186,6 +186,11 @@ public class SubstVisitor extends BaseExpressionVisitor<Void, Expression> implem
     return new OfTypeExpression(expr.getExpression().accept(this, null), expr.getType().accept(this, null));
   }
 
+  @Override
+  public Expression visitNat(NatExpression expr, Void params) {
+    return new NatExpression(expr.getSuccs(), expr.getExpression().accept(this, params));
+  }
+
   public LetClause visitLetClause(LetClause clause) {
     DependentLink parameters = DependentLink.Helper.subst(clause.getParameters(), mySubstitution);
     Expression resultType = clause.getResultType() == null ? null : clause.getResultType().accept(this, null);

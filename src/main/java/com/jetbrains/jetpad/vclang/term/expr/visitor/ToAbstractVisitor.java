@@ -268,6 +268,15 @@ public class ToAbstractVisitor extends BaseExpressionVisitor<Void, Abstract.Expr
     return expr.getExpression().accept(this, null);
   }
 
+  @Override
+  public Abstract.Expression visitNat(NatExpression expr, Void params) {
+    if (expr.isLiteral()) {
+      return myFactory.makeNumLiteral(expr.getSuccs().intValue());
+    }
+    // TODO
+    throw new UnsupportedOperationException("TODO");
+  }
+
   private List<Abstract.Clause> visitBranch(BranchElimTreeNode branchNode) {
     List<Abstract.Clause> clauses = new ArrayList<>(branchNode.getConstructorClauses().size());
     for (ConstructorClause clause : branchNode.getConstructorClauses()) {

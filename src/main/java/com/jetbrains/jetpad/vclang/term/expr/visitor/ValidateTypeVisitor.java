@@ -6,6 +6,7 @@ import com.jetbrains.jetpad.vclang.term.expr.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.visitor.ElimTreeNodeVisitor;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.*;
@@ -285,6 +286,17 @@ public class ValidateTypeVisitor extends BaseExpressionVisitor<Expression, Void>
   @Override
   public Void visitOfType(OfTypeExpression expr, Expression params) {
     myErrorReporter.addError(expr, "OfTypeExpression found");
+    return null;
+  }
+
+  @Override
+  public Void visitNat(NatExpression expr, Expression expectedType) {
+    validateExprType(expr, expectedType);
+    BigInteger succs = expr.getSuccs();
+    if (succs.compareTo(BigInteger.valueOf(1)) < 0) {
+      myErrorReporter.addError(expr, "Succs is expected to be positive");
+    }
+    expr.getExpression().accept(this, Nat());
     return null;
   }
 

@@ -11,7 +11,6 @@ import com.jetbrains.jetpad.vclang.term.definition.visitor.ValidateDefinitionVis
 import com.jetbrains.jetpad.vclang.term.expr.Expression;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.CheckTypeVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.ValidateTypeVisitor;
-import com.jetbrains.jetpad.vclang.typechecking.error.GeneralError;
 import com.jetbrains.jetpad.vclang.typechecking.error.reporter.ErrorReporter;
 import com.jetbrains.jetpad.vclang.typechecking.error.reporter.ListErrorReporter;
 
@@ -25,13 +24,15 @@ import static org.junit.Assert.assertFalse;
 
 public class TypeCheckingTestCase {
   private static void validateDef(Definition def) {
-    assertEquals("Validation errors", 0, def.accept(new ValidateDefinitionVisitor(), null).errors());
+    ValidateTypeVisitor.ErrorReporter reporter = def.accept(new ValidateDefinitionVisitor(), null);
+    assertEquals("Validation errors: " + reporter, 0, reporter.errors());
   }
 
   private static void validateExpr(Expression expr) {
     if (expr == null)
       return;
-    assertEquals("Validation errors", 0, expr.validateType().errors());
+    ValidateTypeVisitor.ErrorReporter reporter = expr.validateType();
+    assertEquals("Validation errors: " + reporter, 0, reporter.errors());
   }
 
   public static CheckTypeVisitor.Result typeCheckExpr(List<Binding> context, Concrete.Expression expression, Expression expectedType, ErrorReporter errorReporter) {

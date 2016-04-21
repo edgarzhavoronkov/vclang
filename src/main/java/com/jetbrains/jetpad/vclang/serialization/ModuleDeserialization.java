@@ -28,6 +28,7 @@ import com.jetbrains.jetpad.vclang.term.pattern.elimtree.ElimTreeDeserialization
 import com.jetbrains.jetpad.vclang.typechecking.error.TypeCheckingError;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.*;
@@ -475,6 +476,13 @@ public class ModuleDeserialization {
         Expression expr = readExpression(stream, definitionMap);
         Expression type = readExpression(stream, definitionMap);
         return new OfTypeExpression(expr, type);
+      }
+      case 17: {
+        int bytesLen = stream.readInt();
+        byte[] bytes = new byte[bytesLen];
+        stream.readFully(bytes);
+        Expression expr = readExpression(stream, definitionMap);
+        return new NatExpression(new BigInteger(bytes), expr);
       }
       default: {
         throw new IncorrectFormat();

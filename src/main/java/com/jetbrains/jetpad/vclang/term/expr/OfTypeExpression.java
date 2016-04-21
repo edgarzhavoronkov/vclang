@@ -131,4 +131,9 @@ public class OfTypeExpression extends Expression {
   public UniverseExpression toUniverse() {
     return myExpression.toUniverse();
   }
+
+  @Override
+  public NatExpression toNat() {
+    return myExpression.toNat();
+  }
 }
