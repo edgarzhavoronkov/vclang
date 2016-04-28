@@ -84,6 +84,7 @@ public class Prelude extends Namespace {
     NAT = nat.definition();
     ZERO = nat.addConstructor("zero", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.PROP), EmptyDependentLink.getInstance());
     SUC = nat.addConstructor("suc", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.SET), param(DataCall(NAT)));
+
     DependentLink xAdd = param("x", Nat());
     DependentLink yAdd = param("y", Nat());
     DependentLink addParams = params(xAdd, yAdd);
@@ -94,6 +95,17 @@ public class Prelude extends Namespace {
             clause(ZERO, EmptyDependentLink.getInstance(), Reference(yAdd)),
             clause(SUC, xPrimeAdd, Suc(Apps(FunCall(NAT_ADD), Reference(xPrimeAdd), Reference(yAdd))))));
     NAT_ADD.setElimTree(addElimTree);
+
+    DependentLink xMul = param("x", Nat());
+    DependentLink yMul = param("y", Nat());
+    DependentLink mulParams = params(xMul, yMul);
+    DefinitionBuilder.Function natMul = new DefinitionBuilder.Function(PRELUDE, "*", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)7), mulParams, Nat(), null);
+    NAT_MUL = natMul.definition();
+    DependentLink xPrimeMul = param("x'", Nat());
+    ElimTreeNode mulElimTree = top(xMul, branch(xMul, tail(yMul),
+            clause(ZERO, EmptyDependentLink.getInstance(), Zero()),
+            clause(SUC, xPrimeMul, Apps(FunCall(NAT_ADD), Reference(yMul), Apps(FunCall(NAT_MUL), Reference(xPrimeMul), Reference(yMul))))));
+    NAT_MUL.setElimTree(mulElimTree);
 
     /* I, left, right */
     DefinitionBuilder.Data interval = new DefinitionBuilder.Data(PRELUDE, "I", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.PROP), EmptyDependentLink.getInstance());

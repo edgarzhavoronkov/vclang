@@ -100,6 +100,24 @@ public class NatExpressionTest {
   }
 
   @Test
+  public void testMulSmall() {
+    Expression e = typeCheckExpr("3 * 5", Nat()).expression;
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(15), nat.getSuccs());
+  }
+
+  @Test
+  public void testMulLarge() {
+    Expression e = typeCheckExpr("1000000000 * 1000000000", Nat()).expression;
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(new BigInteger("1000000000000000000"), nat.getSuccs());
+  }
+
+  @Test
   public void testFactorialSmall() {
     typeCheckClass("" +
             "\\function\n" +
