@@ -31,6 +31,7 @@ public class Prelude extends Namespace {
 
   public static DataDefinition NAT;
   public static Constructor ZERO, SUC;
+  public static FunctionDefinition NAT_ADD, NAT_MUL;
 
   public static DataDefinition INTERVAL;
   public static Constructor LEFT, RIGHT, ABSTRACT;
@@ -83,6 +84,16 @@ public class Prelude extends Namespace {
     NAT = nat.definition();
     ZERO = nat.addConstructor("zero", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.PROP), EmptyDependentLink.getInstance());
     SUC = nat.addConstructor("suc", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.SET), param(DataCall(NAT)));
+    DependentLink xAdd = param("x", Nat());
+    DependentLink yAdd = param("y", Nat());
+    DependentLink addParams = params(xAdd, yAdd);
+    DefinitionBuilder.Function natAdd = new DefinitionBuilder.Function(PRELUDE, "+", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)6), addParams, Nat(), null);
+    NAT_ADD = natAdd.definition();
+    DependentLink xPrimeAdd = param("x'", Nat());
+    ElimTreeNode addElimTree = top(xAdd, branch(xAdd, tail(yAdd),
+            clause(ZERO, EmptyDependentLink.getInstance(), Reference(yAdd)),
+            clause(SUC, xPrimeAdd, Suc(Apps(FunCall(NAT_ADD), Reference(xPrimeAdd), Reference(yAdd))))));
+    NAT_ADD.setElimTree(addElimTree);
 
     /* I, left, right */
     DefinitionBuilder.Data interval = new DefinitionBuilder.Data(PRELUDE, "I", Abstract.Binding.DEFAULT_PRECEDENCE, new Universe.Type(0, Universe.Type.PROP), EmptyDependentLink.getInstance());

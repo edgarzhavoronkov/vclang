@@ -1,5 +1,6 @@
 package com.jetbrains.jetpad.vclang.term.expr;
 
+import com.jetbrains.jetpad.vclang.naming.NamespaceMember;
 import com.jetbrains.jetpad.vclang.term.Prelude;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.CheckTypeVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.NormalizeVisitor;
@@ -80,4 +81,53 @@ public class NatExpressionTest {
     assertEquals(BigInteger.valueOf(3), nat.getSuccs());
   }
 
+  @Test
+  public void testAddSmall() {
+    Expression e = typeCheckExpr("3 + 5", Nat()).expression;
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(8), nat.getSuccs());
+  }
+
+  @Test
+  public void testAddLarge() {
+    Expression e = typeCheckExpr("100000000 + 1", Nat()).expression;
+    NatExpression nat = e.normalize(NormalizeVisitor.Mode.NF).toNat();
+    assertNotNull(nat);
+    assertTrue(nat.isLiteral());
+    assertEquals(BigInteger.valueOf(100000001), nat.getSuccs());
+  }
+
+  @Test
+  public void testFactorialSmall() {
+    typeCheckClass("" +
+            "\\function\n" +
+            "idp {A : \\Type0} {a : A} => path (\\lam _ => a)\n" +
+            "\\function \\infixl 7\n" +
+            "(*) (x y : Nat) : Nat <= \\elim x\n" +
+            "    | zero => zero\n" +
+            "    | suc x' => y + (x' * y)\n" +
+            "\\function\n" +
+            "fac (x : Nat) : Nat\n" +
+            "    <= \\elim x | zero => suc zero | suc x' => suc x' * fac x'\n" +
+            "\\function\n" +
+            "test-fac : fac 4 = 24 => idp\n");
+  }
+
+  @Test
+  public void testFactorialLarge() {
+    typeCheckClass("" +
+            "\\function\n" +
+            "idp {A : \\Type0} {a : A} => path (\\lam _ => a)\n" +
+            "\\function \\infixl 7\n" +
+            "(*) (x y : Nat) : Nat <= \\elim x\n" +
+            "    | zero => zero\n" +
+            "    | suc x' => y + (x' * y)\n" +
+            "\\function\n" +
+            "fac (x : Nat) : Nat\n" +
+            "    <= \\elim x | zero => suc zero | suc x' => suc x' * fac x'\n" +
+            "\\function\n" +
+            "test-fac : fac 12 = 479001600 => idp\n");
+  }
 }

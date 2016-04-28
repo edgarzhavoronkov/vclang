@@ -42,6 +42,13 @@ public class EvalNormalizer implements Normalizer {
   public Expression normalize(Function fun, DependentLink params, List<? extends Expression> paramArgs, List<? extends Expression> arguments, List<? extends Expression> otherArguments, List<? extends EnumSet<AppExpression.Flag>> otherFlags, NormalizeVisitor.Mode mode) {
     assert fun.getNumberOfRequiredArguments() == arguments.size();
 
+    if (fun == Prelude.NAT_ADD && arguments.size() == 2) {
+      NatExpression lhs = arguments.get(0).normalize(mode).toNat();
+      if (lhs != null && lhs.isLiteral()) {
+        Expression rhs = arguments.get(1);
+        return Suc(lhs.getSuccs(), rhs).normalize(mode);
+      }
+    }
     if (fun == Prelude.SUC && arguments.size() == 1) {
       Expression result = arguments.get(0).normalize(mode);
       return Suc(1, result).normalize(mode);
