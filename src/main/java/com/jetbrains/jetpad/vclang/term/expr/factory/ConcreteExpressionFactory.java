@@ -6,6 +6,7 @@ import com.jetbrains.jetpad.vclang.term.definition.ClassField;
 import com.jetbrains.jetpad.vclang.term.definition.Definition;
 import com.jetbrains.jetpad.vclang.term.definition.Universe;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import static com.jetbrains.jetpad.vclang.term.ConcreteExpressionFactory.*;
@@ -142,7 +143,7 @@ public class ConcreteExpressionFactory implements AbstractExpressionFactory {
   }
 
   @Override
-  public Abstract.NumericLiteral makeNumLiteral(int num) {
+  public Abstract.NumericLiteral makeNumLiteral(BigInteger num) {
     return cNum(num);
   }
 }

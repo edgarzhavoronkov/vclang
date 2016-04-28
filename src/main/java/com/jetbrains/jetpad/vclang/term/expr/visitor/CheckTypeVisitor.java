@@ -28,6 +28,7 @@ import com.jetbrains.jetpad.vclang.typechecking.implicitargs.StdImplicitArgsInfe
 import com.jetbrains.jetpad.vclang.typechecking.implicitargs.equations.DummyEquations;
 import com.jetbrains.jetpad.vclang.typechecking.implicitargs.equations.Equations;
 
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.jetbrains.jetpad.vclang.term.context.param.DependentLink.Helper.size;
@@ -875,7 +876,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<Expression, C
 
   @Override
   public Result visitNumericLiteral(Abstract.NumericLiteral expr, Expression expectedType) {
-    int number = expr.getNumber();
+    BigInteger number = expr.getNumber();
     Expression expression = Suc(number, Zero());
     return checkResult(expectedType, new Result(expression, Nat()), expr);
   }

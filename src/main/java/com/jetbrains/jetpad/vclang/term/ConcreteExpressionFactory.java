@@ -3,6 +3,7 @@ package com.jetbrains.jetpad.vclang.term;
 import com.jetbrains.jetpad.vclang.term.definition.Definition;
 import com.jetbrains.jetpad.vclang.term.definition.Universe;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 
@@ -218,7 +219,11 @@ public class ConcreteExpressionFactory {
     return new Concrete.BinOpExpression(POSITION, left, binOp, right);
   }
 
-  public static Concrete.NumericLiteral cNum(int num) {
+  public static Concrete.NumericLiteral cNum(BigInteger num) {
     return new Concrete.NumericLiteral(POSITION, num);
+  }
+
+  public static Concrete.NumericLiteral cNum(int num) {
+    return cNum(BigInteger.valueOf(num));
   }
 }

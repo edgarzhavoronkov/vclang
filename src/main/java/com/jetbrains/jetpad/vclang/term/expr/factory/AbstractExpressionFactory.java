@@ -5,6 +5,7 @@ import com.jetbrains.jetpad.vclang.term.definition.ClassField;
 import com.jetbrains.jetpad.vclang.term.definition.Definition;
 import com.jetbrains.jetpad.vclang.term.definition.Universe;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface AbstractExpressionFactory {
@@ -34,5 +35,5 @@ public interface AbstractExpressionFactory {
   Abstract.Pattern makeConPattern(String name, List<? extends Abstract.PatternArgument> args);
   Abstract.Pattern makeNamePattern(String name);
   Abstract.PatternArgument makePatternArgument(Abstract.Pattern pattern, boolean explicit);
-  Abstract.Expression makeNumLiteral(int num);
+  Abstract.Expression makeNumLiteral(BigInteger num);
 }

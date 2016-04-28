@@ -7,6 +7,7 @@ import com.jetbrains.jetpad.vclang.typechecking.error.reporter.ErrorReporter;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -658,7 +659,7 @@ public class BuildVisitor extends VcgrammarBaseVisitor {
   @Override
   public Concrete.NumericLiteral visitAtomNumber(AtomNumberContext ctx) {
     if (ctx == null) return null;
-    return new Concrete.NumericLiteral(tokenPosition(ctx.NUMBER().getSymbol()), Integer.valueOf(ctx.NUMBER().getText()));
+    return new Concrete.NumericLiteral(tokenPosition(ctx.NUMBER().getSymbol()), new BigInteger(ctx.NUMBER().getText()));
   }
 
   @Override

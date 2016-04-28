@@ -271,7 +271,7 @@ public class ToAbstractVisitor extends BaseExpressionVisitor<Void, Abstract.Expr
   @Override
   public Abstract.Expression visitNat(NatExpression expr, Void params) {
     if (expr.isLiteral()) {
-      return myFactory.makeNumLiteral(expr.getSuccs().intValue());
+      return myFactory.makeNumLiteral(expr.getSuccs());
     }
     return expr.toApp().accept(this, null);
   }

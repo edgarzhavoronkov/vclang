@@ -166,4 +166,11 @@ public class NatExpressionTest {
             "fin11 : Fin 1 => fzero\n"
     );
   }
+
+  @Test
+  public void testPrettyPrintBigInt() {
+    final String NUM = "12345678901234567890";
+    Expression e = typeCheckExpr(NUM, Nat()).expression;
+    assertEquals(NUM, e.toString());
+  }
 }

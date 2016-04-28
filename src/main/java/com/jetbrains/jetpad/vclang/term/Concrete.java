@@ -9,6 +9,7 @@ import com.jetbrains.jetpad.vclang.term.expr.visitor.AbstractExpressionVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.PrettyPrintVisitor;
 import com.jetbrains.jetpad.vclang.term.statement.visitor.AbstractStatementVisitor;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -709,15 +710,15 @@ public final class Concrete {
   }
 
   public static class NumericLiteral extends Expression implements Abstract.NumericLiteral {
-    private final int myNumber;
+    private final BigInteger myNumber;
 
-    public NumericLiteral(Position position, int number) {
+    public NumericLiteral(Position position, BigInteger number) {
       super(position);
       myNumber = number;
     }
 
     @Override
-    public int getNumber() {
+    public BigInteger getNumber() {
       return myNumber;
     }
 

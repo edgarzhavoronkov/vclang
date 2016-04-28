@@ -207,11 +207,11 @@ public class ExpressionFactory {
   }
 
   public static Expression Suc(BigInteger succs, Expression expr) {
-    return new NatExpression(succs ,expr);
+    return succs.equals(BigInteger.ZERO) ? expr : new NatExpression(succs ,expr);
   }
 
   public static Expression Suc(int succs, Expression expr) {
-    return succs == 0 ? expr : Suc(BigInteger.valueOf(succs), expr);
+    return Suc(BigInteger.valueOf(succs), expr);
   }
 
   public static UniverseExpression Universe() {

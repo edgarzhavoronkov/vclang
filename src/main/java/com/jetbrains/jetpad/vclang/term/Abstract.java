@@ -7,6 +7,7 @@ import com.jetbrains.jetpad.vclang.term.definition.visitor.AbstractDefinitionVis
 import com.jetbrains.jetpad.vclang.term.expr.visitor.AbstractExpressionVisitor;
 import com.jetbrains.jetpad.vclang.term.statement.visitor.AbstractStatementVisitor;
 
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -186,7 +187,7 @@ public final class Abstract {
   }
 
   public interface NumericLiteral extends Expression {
-    int getNumber();
+    BigInteger getNumber();
   }
 
   public interface Binding extends SourceNode {
