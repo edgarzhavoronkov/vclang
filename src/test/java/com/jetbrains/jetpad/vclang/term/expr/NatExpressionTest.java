@@ -148,4 +148,15 @@ public class NatExpressionTest {
             "\\function\n" +
             "test-fac : fac 12 = 479001600 => idp\n");
   }
+
+  @Test
+  public void testFin() {
+    typeCheckClass("" +
+            "\\data Fin (n : Nat)\n" +
+            "    | Fin (suc n) => fzero\n" +
+            "    | Fin (suc n) => fsuc (Fin n)\n" +
+            "\\function\n" +
+            "fin11 : Fin 1 => fzero\n"
+    );
+  }
 }

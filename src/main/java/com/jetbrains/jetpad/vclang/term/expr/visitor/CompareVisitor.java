@@ -13,6 +13,7 @@ import com.jetbrains.jetpad.vclang.term.pattern.elimtree.visitor.ElimTreeNodeVis
 import com.jetbrains.jetpad.vclang.typechecking.EtaNormalization;
 import com.jetbrains.jetpad.vclang.typechecking.implicitargs.equations.Equations;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,9 +64,24 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     return tree1.accept(this, tree2);
   }
 
+  private Boolean compareNats(Expression expr1, Expression expr2) {
+    NatExpression nat1 = expr1.toNat();
+    NatExpression nat2 = expr2.toNat();
+    if (nat1 == null || nat2 == null) {
+      return null;
+    }
+    BigInteger succs = nat1.getSuccs().min(nat2.getSuccs());
+    return compare(nat1.unsucc(succs), nat2.unsucc(succs));
+  }
+
   private Boolean compare(Expression expr1, Expression expr2) {
     if (expr1 == expr2 || expr1.toError() != null  || expr2.toError() != null) {
       return true;
+    }
+
+    Boolean natCmp = compareNats(expr1, expr2);
+    if (natCmp != null) {
+      return natCmp;
     }
 
     expr1 = EtaNormalization.normalize(expr1);

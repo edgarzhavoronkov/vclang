@@ -13,10 +13,6 @@ import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.Apps;
 
 public class EtaNormalization {
   public static Expression normalize(Expression expression) {
-    NatExpression nat = expression.toNat();
-    if (nat != null && nat.isLiteral()) {
-      return expression;
-    }
     LamExpression lam = expression.toLam();
     if (lam != null) {
       return normalizeLam(lam);

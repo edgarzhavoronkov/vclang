@@ -18,10 +18,15 @@ public class NatExpression extends Expression {
   }
 
   public Expression unsucc() {
-    if (mySuccs.equals(BigInteger.ONE)) {
+    return unsucc(BigInteger.ONE);
+  }
+
+  public Expression unsucc(BigInteger unsuccs) {
+    assert unsuccs.compareTo(mySuccs) <= 0;
+    if (mySuccs.equals(unsuccs)) {
       return myExpression;
     } else {
-      return Suc(mySuccs.subtract(BigInteger.ONE), myExpression);
+      return Suc(mySuccs.subtract(unsuccs), myExpression);
     }
   }
 
