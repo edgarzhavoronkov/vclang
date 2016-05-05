@@ -282,7 +282,7 @@ public class NormalizationTest {
   @Test
   public void testConditionNormalization() {
     typeCheckClass(
-        "\\static \\data Z | pos Nat | neg Nat \\with | pos zero => neg 0\n" +
+//        "\\static \\data Z | pos Nat | neg Nat \\with | pos zero => neg 0\n" +
         "\\static \\function only-one-zero : pos 0 = neg 0 => path (\\lam _ => pos 0)"
     );
   }

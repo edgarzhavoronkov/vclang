@@ -169,6 +169,9 @@ public class Preprelude extends Namespace {
     NAT.setUniverse(TypeUniverse.SetOfLevel(0));
     ZERO.setUniverse(TypeUniverse.SetOfLevel(0));
     SUC.setUniverse(TypeUniverse.SetOfLevel(0));
+    INT.setUniverse(TypeUniverse.SetOfLevel(0));
+    POS.setUniverse(TypeUniverse.SetOfLevel(0));
+    NEG.setUniverse(TypeUniverse.SetOfLevel(0));
     LVL.setUniverse(TypeUniverse.SetOfLevel(0));
     ZERO_LVL.setUniverse(TypeUniverse.SetOfLevel(0));
     SUC_LVL.setUniverse(TypeUniverse.SetOfLevel(0));
