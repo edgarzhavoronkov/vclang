@@ -4,6 +4,7 @@ import com.jetbrains.jetpad.vclang.term.Abstract;
 import com.jetbrains.jetpad.vclang.term.context.binding.Binding;
 import com.jetbrains.jetpad.vclang.term.definition.ClassField;
 import com.jetbrains.jetpad.vclang.term.definition.Constructor;
+import com.jetbrains.jetpad.vclang.term.definition.TypeUniverse;
 import com.jetbrains.jetpad.vclang.term.expr.*;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.BaseExpressionVisitor;
 import com.jetbrains.jetpad.vclang.term.pattern.*;
@@ -18,6 +19,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SerializeVisitor extends BaseExpressionVisitor<Void, Void> implements ElimTreeNodeVisitor<Void, Void> {
@@ -172,7 +174,7 @@ public class SerializeVisitor extends BaseExpressionVisitor<Void, Void> implemen
   public Void visitUniverse(UniverseExpression expr, Void params) {
     myStream.write(8);
     try {
-      ModuleSerialization.writeUniverse(myDataStream, expr.getUniverse());
+      ModuleSerialization.writeUniverse(this, expr.getUniverse());
     } catch (IOException e) {
       throw new IllegalStateException();
     }
@@ -296,8 +298,41 @@ public class SerializeVisitor extends BaseExpressionVisitor<Void, Void> implemen
   }
 
   @Override
-  public Void visitNat(NatExpression expr, Void params) {
+  public Void visitLevel(LevelExpression expr, Void params) {
     myStream.write(17);
+    try {
+      if (expr.getConverter() instanceof TypeUniverse.LvlConverter) {
+        myDataStream.writeInt(0);
+      } else if (expr.getConverter() instanceof TypeUniverse.CNatConverter) {
+        myDataStream.writeInt(1);
+      } else {
+        throw new IllegalStateException();
+      }
+      if (expr.isInfinity()) {
+        myDataStream.writeBoolean(true);
+      } else {
+        myDataStream.writeBoolean(false);
+        List<LevelExpression> maxArgs = expr.toListOfMaxArgs();
+        myDataStream.writeInt(maxArgs.size());
+        for (LevelExpression arg : maxArgs) {
+          myDataStream.writeInt(arg.getUnitSucs());
+          if (arg.isClosed()) {
+            myDataStream.writeBoolean(true);
+          } else {
+            myDataStream.writeBoolean(false);
+            writeBinding(arg.getUnitBinding());
+          }
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException();
+    }
+    return null;
+  }
+
+  @Override
+  public Void visitNat(NatExpression expr, Void params) {
+    myStream.write(18);
     byte[] bytes = expr.getSuccs().toByteArray();
     try {
       myDataStream.writeInt(bytes.length);

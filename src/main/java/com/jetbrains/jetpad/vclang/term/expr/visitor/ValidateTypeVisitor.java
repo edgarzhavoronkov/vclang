@@ -1,7 +1,7 @@
 package com.jetbrains.jetpad.vclang.term.expr.visitor;
 
 import com.jetbrains.jetpad.vclang.term.context.param.DependentLink;
-import com.jetbrains.jetpad.vclang.term.definition.Universe;
+import com.jetbrains.jetpad.vclang.term.definition.TypeUniverse;
 import com.jetbrains.jetpad.vclang.term.expr.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.visitor.ElimTreeNodeVisitor;
@@ -79,9 +79,9 @@ public class ValidateTypeVisitor extends BaseExpressionVisitor<Expression, Void>
     if (expectedUniverse != null) {
       UniverseExpression actualUniverse = actual.toUniverse();
       if (actualUniverse != null) {
-        Universe expectedU = expectedUniverse.getUniverse();
-        Universe actualU = actualUniverse.getUniverse();
-        return actualU.lessOrEquals(expectedU);
+        TypeUniverse expectedU = expectedUniverse.getUniverse();
+        TypeUniverse actualU = actualUniverse.getUniverse();
+        return actualU.isLessOrEquals(expectedU);
       } else {
         return false;
       }
@@ -297,6 +297,12 @@ public class ValidateTypeVisitor extends BaseExpressionVisitor<Expression, Void>
       myErrorReporter.addError(expr, "Succs is expected to be positive");
     }
     expr.getExpression().accept(this, Nat());
+    return null;
+  }
+
+  @Override
+  public Void visitLevel(LevelExpression expr, Expression params) {
+    // TODO
     return null;
   }
 

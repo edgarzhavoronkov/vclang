@@ -2,6 +2,7 @@ package com.jetbrains.jetpad.vclang.term.expr;
 
 import com.jetbrains.jetpad.vclang.naming.NamespaceMember;
 import com.jetbrains.jetpad.vclang.term.Prelude;
+import com.jetbrains.jetpad.vclang.term.Preprelude;
 import com.jetbrains.jetpad.vclang.term.definition.FunctionDefinition;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.CheckTypeVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.NormalizeVisitor;
@@ -51,7 +52,7 @@ public class NatExpressionTest {
     Expression e = Suc(3, Zero());
     Expression app = e.toApp();
     assertNotNull(app);
-    assertEquals(app.getFunction(), ConCall(Prelude.SUC));
+    assertEquals(app.getFunction(), ConCall(Preprelude.SUC));
     assertEquals(app.getArguments(), Collections.singletonList(Suc(2, Zero())));
   }
 

@@ -6,6 +6,7 @@ import com.jetbrains.jetpad.vclang.naming.NamespaceMember;
 import com.jetbrains.jetpad.vclang.parser.BinOpParser;
 import com.jetbrains.jetpad.vclang.term.Abstract;
 import com.jetbrains.jetpad.vclang.term.Prelude;
+import com.jetbrains.jetpad.vclang.term.Preprelude;
 import com.jetbrains.jetpad.vclang.term.context.Utils;
 import com.jetbrains.jetpad.vclang.term.context.param.DependentLink;
 import com.jetbrains.jetpad.vclang.term.definition.Constructor;
@@ -37,6 +38,7 @@ public class ResolveNameVisitor implements AbstractExpressionVisitor<Void, Void>
     CompositeNameResolver compositeNameResolver = new CompositeNameResolver();
     compositeNameResolver.pushNameResolver(nameResolver);
     compositeNameResolver.pushNameResolver(new NamespaceNameResolver(Prelude.PRELUDE));
+    compositeNameResolver.pushNameResolver(new NamespaceNameResolver(Preprelude.PRE_PRELUDE));
     myNameResolver = compositeNameResolver;
     myContext = context;
     myResolveListener = resolveListener;
@@ -145,6 +147,12 @@ public class ResolveNameVisitor implements AbstractExpressionVisitor<Void, Void>
   @Override
   public Void visitUniverse(Abstract.UniverseExpression expr, Void params) {
     return null;
+  }
+
+  @Override
+  public Void visitPolyUniverse(Abstract.PolyUniverseExpression expr, Void params) {
+    expr.getPLevel().accept(this, null);
+    return expr.getHLevel().accept(this, null);
   }
 
   @Override

@@ -1,16 +1,18 @@
 package com.jetbrains.jetpad.vclang.term.expr.visitor;
 
 import com.jetbrains.jetpad.vclang.term.Abstract;
+import com.jetbrains.jetpad.vclang.term.Preprelude;
 import com.jetbrains.jetpad.vclang.term.context.binding.Binding;
 import com.jetbrains.jetpad.vclang.term.context.binding.InferenceBinding;
 import com.jetbrains.jetpad.vclang.term.context.param.DependentLink;
 import com.jetbrains.jetpad.vclang.term.context.param.UntypedDependentLink;
 import com.jetbrains.jetpad.vclang.term.definition.ClassField;
-import com.jetbrains.jetpad.vclang.term.definition.Universe;
 import com.jetbrains.jetpad.vclang.term.expr.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.*;
 import com.jetbrains.jetpad.vclang.term.pattern.elimtree.visitor.ElimTreeNodeVisitor;
 import com.jetbrains.jetpad.vclang.typechecking.EtaNormalization;
+import com.jetbrains.jetpad.vclang.typechecking.exprorder.ExpressionOrder;
+import com.jetbrains.jetpad.vclang.typechecking.exprorder.StandardOrder;
 import com.jetbrains.jetpad.vclang.typechecking.implicitargs.equations.Equations;
 
 import java.math.BigInteger;
@@ -19,12 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.FieldCall;
 import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.Reference;
 
 public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> implements ElimTreeNodeVisitor<ElimTreeNode,Boolean> {
   private final Map<Binding, Binding> mySubstitution;
   private final Equations myEquations;
   private final Abstract.SourceNode mySourceNode;
+  private final ExpressionOrder order = StandardOrder.getInstance();
   private Equations.CMP myCMP;
 
   private CompareVisitor(Equations equations, Equations.CMP cmp, Abstract.SourceNode sourceNode) {
@@ -57,7 +61,7 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     return new CompareVisitor(substitution, equations, cmp).compare(expr1, expr2);
   }
 
-  private Boolean compare(ElimTreeNode tree1, ElimTreeNode tree2) {
+  public Boolean compare(ElimTreeNode tree1, ElimTreeNode tree2) {
     if (tree1 == tree2) {
       return true;
     }
@@ -74,7 +78,7 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     return compare(nat1.unsucc(succs), nat2.unsucc(succs));
   }
 
-  private Boolean compare(Expression expr1, Expression expr2) {
+  public Boolean compare(Expression expr1, Expression expr2) {
     if (expr1 == expr2 || expr1.toError() != null  || expr2.toError() != null) {
       return true;
     }
@@ -102,6 +106,35 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     if (ref2 != null && ref2.getBinding() instanceof InferenceBinding) {
       return compareReference(ref2, expr1, false);
     }
+    ReferenceExpression ref1 = expr1.toReference();
+    if (ref1 != null && ref1.getBinding() instanceof InferenceBinding) {
+      return compareReference(ref1, expr2, true);
+    }
+
+    NewExpression new1 = expr1.toNew();
+    NewExpression new2 = expr2.toNew();
+    if (new1 != null && new2 == null) {
+      return new1.accept(this, expr2);
+    }
+    if (new2 != null && new1 == null) {
+      myCMP = myCMP.not();
+      return new2.accept(this, expr1);
+    }
+
+    if (order.isComparable(expr1)) {
+      Boolean ordCmpResult = order.compare(expr1, expr2, this, myCMP);
+
+      if (ordCmpResult != null) {
+        return ordCmpResult;
+      }
+
+      if (expr1.toUniverse() != null) return false;
+    }
+
+   // if ((myCMP == Equations.CMP.GE || myCMP == Equations.CMP.LE) && expr1.toReference() == null) {
+   //   if (order.compare(expr1, expr2, this, myCMP)) return true;
+   // }
+
     return expr1.accept(this, expr2);
   }
 
@@ -136,15 +169,56 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
       return false;
     }
 
+    Equations.CMP cmp = myCMP;
     myCMP = Equations.CMP.EQ;
     if (!compare(fun1, fun2)) {
       return false;
     }
-    for (int i = 0; i < args1.size(); i++) {
+
+    int i = 0;
+    if (fun1.toDataCall() != null && fun2.toDataCall() != null) {
+      if (args1.isEmpty()) {
+        myCMP = cmp;
+        return true;
+      }
+      if (fun1.toDataCall().getDefinition().getThisClass() != null) {
+        if (!compare(args1.get(i), args2.get(i))) {
+          return false;
+        }
+        if (++i >= args1.size()) {
+          myCMP = cmp;
+          return true;
+        }
+      }
+
+      Expression type1 = args1.get(i).getType().normalize(NormalizeVisitor.Mode.NF);
+      if (type1.toDataCall() != null && type1.toDataCall().getDefinition() == Preprelude.LVL) {
+        Expression type2 = args2.get(i).getType().normalize(NormalizeVisitor.Mode.NF);
+        if (type2.toDataCall() != null && type2.toDataCall().getDefinition() == Preprelude.LVL) {
+          compare(myEquations, cmp, args1.get(i), args2.get(i), null);
+          if (++i >= args1.size()) {
+            myCMP = cmp;
+            return true;
+          }
+          type1 = args1.get(i).getType().normalize(NormalizeVisitor.Mode.NF);
+          if (type1.toDataCall() != null && type1.toDataCall().getDefinition() == Preprelude.CNAT) {
+            type2 = args2.get(i).getType().normalize(NormalizeVisitor.Mode.NF);
+            if (type2.toDataCall() != null && type2.toDataCall().getDefinition() == Preprelude.CNAT) {
+              compare(myEquations, cmp, args1.get(i), args2.get(i), null);
+              i++;
+            }
+          }
+        }
+      }
+    }
+
+    for (; i < args1.size(); i++) {
       if (!compare(args1.get(i), args2.get(i))) {
         return false;
       }
     }
+
+    myCMP = cmp;
     return true;
   }
 
@@ -257,15 +331,15 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
       return false;
     }
 
+    Map<Binding, Binding> substitution = new HashMap<>(mySubstitution);
     for (int i = 0; i < params1.size(); i++) {
-      mySubstitution.put(params1.get(i), params2.get(i));
+      substitution.put(params1.get(i), params2.get(i));
     }
     Equations equations = myEquations.newInstance();
-    if (!new CompareVisitor(mySubstitution, equations, Equations.CMP.EQ).compare(body1, body2)) {
+    if (!new CompareVisitor(substitution, equations, Equations.CMP.EQ).compare(body1, body2)) {
       return false;
     }
     for (int i = 0; i < params1.size(); i++) {
-      mySubstitution.remove(params1.get(i));
       equations.abstractBinding(params2.get(i));
     }
     myEquations.add(equations);
@@ -321,12 +395,26 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     return !params1.hasNext() && !params2.hasNext();
   }
 
+
   @Override
   public Boolean visitUniverse(UniverseExpression expr1, Expression expr2) {
-    UniverseExpression universe2 = expr2.toUniverse();
-    if (universe2 == null) return false;
-    Universe.Cmp result = expr1.getUniverse().compare(universe2.getUniverse());
-    return result == Universe.Cmp.EQUALS || result == myCMP.toUniverseCmp();
+    /*UniverseExpression universe2 = expr2.toUniverse();
+    if (universe2 == null || universe2.getUniverse() == null) return false;
+    TypeUniverse.TypeLevel level1 = ((TypeUniverse) expr1.getUniverse()).getLevel();
+    TypeUniverse.TypeLevel level2 = ((TypeUniverse) universe2.getUniverse()).getLevel();
+
+    if (level1 == null) {
+      return myCMP == Equations.CMP.GE || (level2 == null && myCMP == Equations.CMP.EQ);
+    }
+
+    if (level2 == null) {
+      return myCMP == Equations.CMP.LE;
+    }
+
+    return level1.getValue().accept(this, level2.getValue());
+    /**/
+    //return order.compare(expr1, expr2, this, myCMP);
+    return compare(expr1, expr2);
   }
 
   @Override
@@ -342,12 +430,14 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
       return false;
     }
 
+    Equations.CMP cmp = myCMP;
     myCMP = Equations.CMP.EQ;
     for (int i = 0; i < expr1.getFields().size(); i++) {
       if (!compare(expr1.getFields().get(i), tuple2.getFields().get(i))) {
         return false;
       }
     }
+    myCMP = cmp;
     return true;
   }
 
@@ -377,16 +467,48 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     if (expr1.getField() != proj2.getField()) {
       return false;
     }
+
+    Equations.CMP cmp = myCMP;
     myCMP = Equations.CMP.EQ;
-    return compare(expr1.getExpression(), proj2.getExpression());
+    boolean result = compare(expr1.getExpression(), proj2.getExpression());
+    myCMP = cmp;
+    return result;
+  }
+
+  private boolean compareNew(NewExpression expr1, Expression expr2) {
+    ClassCallExpression classCall = expr1.getExpression().toClassCall();
+    if (classCall == null) {
+      return false;
+    }
+
+    ClassCallExpression classCall2 = expr2.getType().toClassCall();
+
+    for (Map.Entry<ClassField, ClassCallExpression.ImplementStatement> entry : classCall.getImplementStatements().entrySet()) {
+      if (entry.getValue().term == null) {
+        return false;
+      }
+
+      ClassCallExpression.ImplementStatement stat2 = classCall2.getImplementStatements().get(entry.getKey());
+      if (!compare(entry.getValue().term, stat2 != null && stat2.term != null ? stat2.term : FieldCall(entry.getKey()).applyThis(expr2))) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   @Override
   public Boolean visitNew(NewExpression expr1, Expression expr2) {
     NewExpression new2 = expr2.toNew();
-    if (new2 == null) return false;
+    if (new2 == null) {
+      return compareNew(expr1, expr2);
+    }
+
+    Equations.CMP cmp = myCMP;
     myCMP = Equations.CMP.EQ;
-    return compare(expr1.getExpression(), new2.getExpression());
+    boolean result = compare(expr1.getExpression(), new2.getExpression());
+    myCMP = cmp;
+    return result;
   }
 
   @Override
@@ -438,7 +560,6 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
 
   @Override
   public Boolean visitNat(NatExpression expr1, Expression expr2) {
-    // TODO understand what CompareVisitor do
     NatExpression nat2 = expr2.toNat();
     if (nat2 == null) return false;
     if (!expr1.getSuccs().equals(nat2.getSuccs())) {
@@ -446,6 +567,15 @@ public class CompareVisitor extends BaseExpressionVisitor<Expression, Boolean> i
     }
     myCMP = Equations.CMP.EQ;
     return compare(expr1.getExpression(), nat2.getExpression());
+  }
+
+  @Override
+  public Boolean visitLevel(LevelExpression expr, Expression params) {
+    ReferenceExpression ref1 = expr.toReference();
+    ReferenceExpression ref2 = expr.toReference();
+    if (ref1 == null && ref2 == null) return false;
+    if (!(ref1 != null && ref1.getBinding() instanceof InferenceBinding) && !(ref2 != null && ref2.getBinding() instanceof InferenceBinding)) return false;
+    return compare(ref1, ref2);
   }
 
   @Override

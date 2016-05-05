@@ -39,7 +39,9 @@ public abstract class TypeCheckingResult {
   }
 
   public void reportErrors(ErrorReporter errorReporter) {
-    myEquations.reportErrors(errorReporter);
+    if (myUnsolvedVariables.isEmpty()) {
+      myEquations.reportErrors(errorReporter);
+    }
     for (InferenceBinding unsolvedVariable : myUnsolvedVariables) {
       unsolvedVariable.reportErrorInfer(errorReporter);
     }
@@ -59,17 +61,17 @@ public abstract class TypeCheckingResult {
     }
   }
 
-  public Substitution getSubstitution() {
+  public Substitution getSubstitution(boolean onlyPreciseSolutions) {
     if (!myEquations.isEmpty()) {
-      return myEquations.getInferenceVariables(myUnsolvedVariables);
+      return myEquations.getInferenceVariables(myUnsolvedVariables, onlyPreciseSolutions);
     } else {
       return new Substitution();
     }
   }
 
-  public void update() {
+  public void update(boolean onlyPreciseSolutions) {
     if (!myEquations.isEmpty()) {
-      subst(myEquations.getInferenceVariables(myUnsolvedVariables));
+      subst(myEquations.getInferenceVariables(myUnsolvedVariables, onlyPreciseSolutions));
     }
   }
 

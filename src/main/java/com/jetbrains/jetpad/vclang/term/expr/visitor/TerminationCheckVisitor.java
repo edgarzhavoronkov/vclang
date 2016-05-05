@@ -226,6 +226,11 @@ public class TerminationCheckVisitor extends BaseExpressionVisitor<Void, Boolean
     return expr.getExpression().accept(this, params);
   }
 
+  @Override
+  public Boolean visitLevel(LevelExpression expr, Void params) {
+    return true;
+  }
+
   private boolean visitLetClause(LetClause clause) {
     if (!visitArguments(clause.getParameters())) {
       return false;

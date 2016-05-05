@@ -35,16 +35,15 @@ public class Constructor extends Definition implements Function {
     myParameters = EmptyDependentLink.getInstance();
   }
 
-  public Constructor(ResolvedName rn, Abstract.Definition.Precedence precedence, Universe universe, DependentLink parameters, DataDefinition dataType, Patterns patterns) {
-    super(rn, precedence);
-    setUniverse(universe);
+  public Constructor(ResolvedName rn, Abstract.Definition.Precedence precedence, TypeUniverse universe, DependentLink parameters, DataDefinition dataType, Patterns patterns) {
+    super(rn, precedence, universe);
     hasErrors(false);
     myDataType = dataType;
     myParameters = parameters;
     myPatterns = patterns;
   }
 
-  public Constructor(ResolvedName rn, Abstract.Definition.Precedence precedence, Universe universe, DependentLink parameters, DataDefinition dataType) {
+  public Constructor(ResolvedName rn, Abstract.Definition.Precedence precedence, TypeUniverse universe, DependentLink parameters, DataDefinition dataType) {
     this(rn, precedence, universe, parameters, dataType, null);
   }
 

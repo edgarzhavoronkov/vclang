@@ -32,9 +32,8 @@ public class DataDefinition extends Definition {
     return visitor.visitDataDefinition(this, params);
   }
 
-  public DataDefinition(ResolvedName rn, Abstract.Definition.Precedence precedence, Universe universe, DependentLink parameters) {
-    super(rn, precedence);
-    setUniverse(universe);
+  public DataDefinition(ResolvedName rn, Abstract.Definition.Precedence precedence, TypeUniverse universe, DependentLink parameters) {
+    super(rn, precedence, universe);
     hasErrors(false);
     myParameters = parameters;
     myConstructors = new ArrayList<>();

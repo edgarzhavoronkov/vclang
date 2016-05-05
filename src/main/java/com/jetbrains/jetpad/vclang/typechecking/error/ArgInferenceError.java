@@ -40,27 +40,27 @@ public class ArgInferenceError extends TypeCheckingError {
   }
 
   public static String functionArg(int index) {
-    return "Cannot infer " + ordinal(index) + " argument to function";
+    return "Cannot infer the " + ordinal(index) + " argument to function";
   }
 
   public static String typeOfFunctionArg(int index) {
-    return "Cannot infer type of " + ordinal(index) + " argument of function";
+    return "Cannot infer type of the " + ordinal(index) + " argument of function";
   }
 
   public static String lambdaArg(int index) {
-    return "Cannot infer type of " + ordinal(index) + " parameter of lambda";
+    return "Cannot infer type of the " + ordinal(index) + " parameter of lambda";
+  }
+
+  public static String levelOfLambdaArg(int index) {
+    return "Cannot infer level of the type of the " + ordinal(index) + " parameter of lambda";
   }
 
   public static String parameter(int index) {
-    return "Cannot infer " + ordinal(index) + " parameter to constructor";
+    return "Cannot infer the " + ordinal(index) + " parameter to constructor";
   }
 
   public static String expression() {
     return "Cannot infer an expression";
-  }
-
-  public static String type() {
-    return "Cannot infer type of expression";
   }
 
   public static String suffix(int n) {
@@ -90,7 +90,7 @@ public class ArgInferenceError extends TypeCheckingError {
     if (getCause() != null) {
       if (myWhere != null) {
         builder.append(' ');
-        myWhere.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC);
+        myWhere.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC, 0);
       } else {
         builder.append(' ');
         new PrettyPrintVisitor(builder, new ArrayList<String>(), 0).prettyPrint(getCause(), Abstract.Expression.PREC);
@@ -100,20 +100,23 @@ public class ArgInferenceError extends TypeCheckingError {
     if (myCandidates.length > 0) {
       builder.append("\nCandidates are:");
       for (Expression candidate : myCandidates) {
-        builder.append("\n\t");
-        candidate.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC);
+        builder.append("\n");
+        PrettyPrintVisitor.printIndent(builder, PrettyPrintVisitor.INDENT / 2);
+        candidate.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC, PrettyPrintVisitor.INDENT / 2);
       }
     }
 
     if (myExpected != null || myActual != null) {
       builder.append("\nSince types of the candidates are not less or equal to the expected type");
       if (myExpected != null) {
-        builder.append("\nExpected type: ");
-        myExpected.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC);
+        String msg = "Expected type: ";
+        builder.append('\n').append(msg);
+        myExpected.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC, msg.length());
       }
       if (myActual != null) {
-        builder.append("\n  Actual type: ");
-        myActual.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC);
+        String msg = "  Actual type: ";
+        builder.append('\n').append(msg);
+        myActual.prettyPrint(builder, new ArrayList<String>(), Abstract.Expression.PREC, msg.length());
       }
     }
 

@@ -10,7 +10,7 @@ import com.jetbrains.jetpad.vclang.term.expr.Expression;
 
 public abstract class Definition extends NamedBinding implements Referable {
   private Abstract.Definition.Precedence myPrecedence;
-  private Universe myUniverse;
+  private TypeUniverse myUniverse;
   private boolean myHasErrors;
   private final ResolvedName myResolvedName;
   private ClassDefinition myThisClass;
@@ -19,7 +19,15 @@ public abstract class Definition extends NamedBinding implements Referable {
     super(resolvedName.getName());
     myResolvedName = resolvedName;
     myPrecedence = precedence;
-    myUniverse = new Universe.Type(0, Universe.Type.PROP);
+    myUniverse = TypeUniverse.PROP;
+    myHasErrors = true;
+  }
+
+  public Definition(ResolvedName resolvedName, Abstract.Definition.Precedence precedence, TypeUniverse universe) {
+    super(resolvedName.getName());
+    myResolvedName = resolvedName;
+    myPrecedence = precedence;
+    myUniverse = universe;
     myHasErrors = true;
   }
 
@@ -52,11 +60,11 @@ public abstract class Definition extends NamedBinding implements Referable {
     return myResolvedName;
   }
 
-  public Universe getUniverse() {
+  public TypeUniverse getUniverse() {
     return myUniverse;
   }
 
-  public void setUniverse(Universe universe) {
+  public void setUniverse(TypeUniverse universe) {
     myUniverse = universe;
   }
 

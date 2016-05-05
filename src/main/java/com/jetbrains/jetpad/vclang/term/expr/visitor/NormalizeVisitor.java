@@ -81,19 +81,13 @@ public class NormalizeVisitor extends BaseExpressionVisitor<NormalizeVisitor.Mod
         return FieldCall((ClassField) defCallExpr.getDefinition());
       }
 
-      Expression thisArg = expr.getArguments().get(0);
-      Expression thisType = thisArg.getType();
-      if (thisType == null) {
-        assert false;
-      } else {
-        ClassCallExpression classCall = thisType.normalize(Mode.WHNF).toClassCall();
-        if (classCall != null) {
-          ClassCallExpression.ImplementStatement elem = classCall.getImplementStatements().get(defCallExpr.getDefinition());
-          if (elem != null && elem.term != null) {
-            List<? extends EnumSet<AppExpression.Flag>> flags = expr.toApp().getFlags();
-            Expression result = Apps(elem.term, expr.getArguments().subList(1, expr.getArguments().size()), flags.subList(1, flags.size()));
-            return mode == Mode.TOP ? result : result.accept(this, mode);
-          }
+      ClassCallExpression classCall = expr.getArguments().get(0).getType().normalize(Mode.WHNF).toClassCall();
+      if (classCall != null) {
+        ClassCallExpression.ImplementStatement elem = classCall.getImplementStatements().get(defCallExpr.getDefinition());
+        if (elem != null && elem.term != null) {
+          List<? extends EnumSet<AppExpression.Flag>> flags = expr.toApp().getFlags();
+          Expression result = Apps(elem.term, expr.getArguments().subList(1, expr.getArguments().size()), flags.subList(1, flags.size()));
+          return mode == Mode.TOP ? result : result.accept(this, mode);
         }
       }
     }
@@ -245,7 +239,11 @@ public class NormalizeVisitor extends BaseExpressionVisitor<NormalizeVisitor.Mod
 
   @Override
   public Expression visitUniverse(UniverseExpression expr, Mode mode) {
-    return mode == Mode.TOP ? null : expr;
+    if (mode == Mode.TOP) return null;
+    /*if ((mode == Mode.NF || mode == Mode.HUMAN_NF)) {
+      return ((TypeUniverse) expr.getUniverse()).getLevel() != null ? Universe(((TypeUniverse) expr.getUniverse()).getLevel().getValue().accept(this, mode)) : expr;
+    } /**/
+    return expr;
   }
 
   @Override
@@ -306,5 +304,10 @@ public class NormalizeVisitor extends BaseExpressionVisitor<NormalizeVisitor.Mod
     } else {
       return Suc(expr.getSuccs(), result);
     }
+  }
+
+  @Override
+  public Expression visitLevel(LevelExpression expr, Mode mode) {
+    return mode == Mode.TOP ? null : expr;
   }
 }

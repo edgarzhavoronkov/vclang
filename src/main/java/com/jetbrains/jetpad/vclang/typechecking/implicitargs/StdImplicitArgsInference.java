@@ -4,7 +4,7 @@ import com.jetbrains.jetpad.vclang.term.*;
 import com.jetbrains.jetpad.vclang.term.context.binding.FunctionInferenceBinding;
 import com.jetbrains.jetpad.vclang.term.context.binding.InferenceBinding;
 import com.jetbrains.jetpad.vclang.term.context.param.DependentLink;
-import com.jetbrains.jetpad.vclang.term.definition.Universe;
+import com.jetbrains.jetpad.vclang.term.definition.ClassField;
 import com.jetbrains.jetpad.vclang.term.expr.*;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.CheckTypeVisitor;
 import com.jetbrains.jetpad.vclang.term.expr.visitor.NormalizeVisitor;
@@ -30,9 +30,11 @@ public class StdImplicitArgsInference extends BaseImplicitArgsInference {
     List<EnumSet<AppExpression.Flag>> flags = new ArrayList<>();
     for (int i = 0; i < parameters.size(); i++) {
       DependentLink parameter = parameters.get(i);
+      Expression binding;
       InferenceBinding inferenceBinding = new FunctionInferenceBinding(parameter.getName(), parameter.getType().subst(substitution), i + 1, expr);
       result.addUnsolvedVariable(inferenceBinding);
-      Expression binding = Reference(inferenceBinding);
+      binding = Reference(inferenceBinding);
+
       arguments.add(binding);
       flags.add(EnumSet.noneOf(AppExpression.Flag.class));
       substitution.add(parameter, binding);
@@ -49,10 +51,25 @@ public class StdImplicitArgsInference extends BaseImplicitArgsInference {
 
     if (isExplicit) {
       ConCallExpression conCall = result.expression.getFunction().toConCall();
-      if (conCall != null && Prelude.isPathCon(conCall.getDefinition()) && result.expression.getArguments().isEmpty()) {
-        InferenceBinding inferenceBinding = new FunctionInferenceBinding("A", Universe(Prelude.getLevel(conCall.getDefinition()), Universe.Type.NOT_TRUNCATED), 1, fun);
+      if (conCall != null && Prelude.isPathCon(conCall.getDefinition()) && result.expression.getArguments().size() <= 1) {
+        Expression interval = DataCall(Preprelude.INTERVAL);
+        Expression lp, lh;
+        if (result.expression.getArguments().isEmpty()) {
+          InferenceBinding inferenceBinding1 = new FunctionInferenceBinding("lp", Lvl(), 1, fun);
+          InferenceBinding inferenceBinding2 = new FunctionInferenceBinding("lh", CNat(), 2, fun);
+          result.addUnsolvedVariable(inferenceBinding1);
+          result.addUnsolvedVariable(inferenceBinding2);
+          lp = Reference(inferenceBinding1);
+          lh = Reference(inferenceBinding2);
+          result.expression = result.expression.addArgument(lp, EnumSet.noneOf(AppExpression.Flag.class)).addArgument(lh, EnumSet.noneOf(AppExpression.Flag.class));
+          result.type = result.type.applyExpressions(Arrays.asList(lp, lh));
+        } else {
+          lp = result.expression.getArguments().get(0);
+          lh = result.expression.getArguments().get(1);
+        }
+
+        InferenceBinding inferenceBinding = new FunctionInferenceBinding("A", Universe(lp, lh), 3, fun);
         result.addUnsolvedVariable(inferenceBinding);
-        Expression interval = DataCall(Prelude.INTERVAL);
         DependentLink lamParam = param("i", interval);
         Expression binding = Reference(inferenceBinding);
         Expression lamExpr = Lam(lamParam, binding);
@@ -64,15 +81,15 @@ public class StdImplicitArgsInference extends BaseImplicitArgsInference {
           return null;
         }
 
-        Expression expr1 = Apps(argResult.expression, ConCall(Prelude.LEFT));
-        Expression expr2 = Apps(argResult.expression, ConCall(Prelude.RIGHT));
+        Expression expr1 = Apps(argResult.expression, ConCall(Preprelude.LEFT));
+        Expression expr2 = Apps(argResult.expression, ConCall(Preprelude.RIGHT));
         result.expression
             .addArgument(expr1, EnumSet.noneOf(AppExpression.Flag.class))
             .addArgument(expr2, EnumSet.noneOf(AppExpression.Flag.class))
             .addArgument(argResult.expression, AppExpression.DEFAULT);
         result.type = result.type.applyExpressions(Arrays.asList(expr1, expr2, argResult.expression));
         result.add(argResult);
-        result.update();
+        result.update(true);
         return result;
       }
 
@@ -108,7 +125,7 @@ public class StdImplicitArgsInference extends BaseImplicitArgsInference {
     result.expression = result.expression.addArgument(argResult.expression, isExplicit ? EnumSet.of(AppExpression.Flag.EXPLICIT, AppExpression.Flag.VISIBLE) : EnumSet.of(AppExpression.Flag.VISIBLE));
     result.type = actualType.applyExpressions(Collections.singletonList(argResult.expression));
     result.add(argResult);
-    result.update();
+    result.update(true);
     return result;
   }
 
@@ -196,7 +213,7 @@ public class StdImplicitArgsInference extends BaseImplicitArgsInference {
 
     result = myVisitor.checkResult(expectedType, result, expr);
     if (result != null) {
-      result.update();
+      result.update(true);
     }
     return result;
   }

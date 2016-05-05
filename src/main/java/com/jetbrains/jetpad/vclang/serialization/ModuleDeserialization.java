@@ -11,6 +11,7 @@ import com.jetbrains.jetpad.vclang.naming.NamespaceMember;
 import com.jetbrains.jetpad.vclang.naming.ResolvedName;
 import com.jetbrains.jetpad.vclang.term.Abstract;
 import com.jetbrains.jetpad.vclang.term.Prelude;
+import com.jetbrains.jetpad.vclang.term.Preprelude;
 import com.jetbrains.jetpad.vclang.term.context.LinkList;
 import com.jetbrains.jetpad.vclang.term.context.binding.Binding;
 import com.jetbrains.jetpad.vclang.term.context.binding.TypedBinding;
@@ -156,7 +157,8 @@ public class ModuleDeserialization {
         rn = fullPathToResolvedName(readFullPath(stream), moduleID);
         readDefinition(stream, rn, !createStubs);
       } else {
-        ModuleID depModuleID = stream.readBoolean() ? moduleID.deserialize(stream) : Prelude.moduleID;
+        int is_prelude = stream.readInt();
+        ModuleID depModuleID = is_prelude == 2 ? moduleID.deserialize(stream) : is_prelude == 1 ? Preprelude.moduleID : Prelude.moduleID;
         rn = fullPathToResolvedName(readFullPath(stream), depModuleID);
       }
       if (!createStubs) {
@@ -209,7 +211,7 @@ public class ModuleDeserialization {
 
   private void deserializeDataDefinition(DataInputStream stream, Map<Integer, Definition> definitionMap, DataDefinition definition) throws IOException {
     if (!definition.hasErrors()) {
-      definition.setUniverse(readUniverse(stream));
+      definition.setUniverse(readUniverse(stream, definitionMap));
       definition.setParameters(readParameters(stream, definitionMap));
     }
 
@@ -234,7 +236,7 @@ public class ModuleDeserialization {
           }
           constructor.setPatterns(new Patterns(patterns));
         }
-        constructor.setUniverse(readUniverse(stream));
+        constructor.setUniverse(readUniverse(stream, definitionMap));
         constructor.setParameters(readParameters(stream, definitionMap));
       }
 
@@ -278,7 +280,7 @@ public class ModuleDeserialization {
 
   private void deserializeClassDefinition(DataInputStream stream, Map<Integer, Definition> definitionMap, ClassDefinition definition) throws IOException {
     deserializeNamespace(stream, definitionMap, definition);
-    definition.setUniverse(readUniverse(stream));
+    definition.setUniverse(readUniverse(stream, definitionMap));
 
     int numFields = stream.readInt();
     for (int i = 0; i < numFields; i++) {
@@ -288,17 +290,39 @@ public class ModuleDeserialization {
       field.hasErrors(stream.readBoolean());
 
       if (!field.hasErrors()) {
-        field.setUniverse(readUniverse(stream));
+        field.setUniverse(readUniverse(stream, definitionMap));
         field.setBaseType(readExpression(stream, definitionMap));
         field.setThisClass(definition);
       }
     }
   }
 
-  public static Universe readUniverse(DataInputStream stream) throws IOException {
-    int level = stream.readInt();
-    int truncated = stream.readInt();
-    return new Universe.Type(level, truncated);
+  public LevelExpression readLevel(DataInputStream stream, Map<Integer, Definition> definitionMap) throws IOException {
+    int convCode = stream.readInt();
+    LevelExpression.Converter conv = convCode == 0 ? new TypeUniverse.LvlConverter() : new TypeUniverse.CNatConverter();
+    boolean isInfinity = stream.readBoolean();
+    if (isInfinity) {
+      return new LevelExpression(conv);
+    } else {
+      LevelExpression result = new LevelExpression(0, conv);
+      int numMaxArgs = stream.readInt();
+      for (int i = 0; i < numMaxArgs; ++i) {
+        int numSucs = stream.readInt();
+        boolean isClosed = stream.readBoolean();
+        if (isClosed) {
+          result = result.max(new LevelExpression(numSucs, conv));
+        } else {
+          result = result.max(new LevelExpression(readBinding(stream, definitionMap), numSucs, conv));
+        }
+      }
+      return result;
+    }
+  }
+
+  public TypeUniverse readUniverse(DataInputStream stream, Map<Integer, Definition> definitionMap) throws IOException {
+    LevelExpression plevel = readExpression(stream, definitionMap).toLevel();
+    LevelExpression hlevel = readExpression(stream, definitionMap).toLevel();
+    return new TypeUniverse(plevel, hlevel);
   }
 
   public TypedBinding readTypedBinding(DataInputStream stream, Map<Integer, Definition> definitionMap) throws IOException {
@@ -436,7 +460,7 @@ public class ModuleDeserialization {
         return Pi(parameters, readExpression(stream, definitionMap));
       }
       case 8: {
-        return new UniverseExpression(readUniverse(stream));
+        return new UniverseExpression(readUniverse(stream, definitionMap));
       }
       case 9: {
         return Error(stream.readBoolean() ? readExpression(stream, definitionMap) : null, new TypeCheckingError(new ModuleResolvedName(myModuleID), "Deserialization error", null));
@@ -478,6 +502,9 @@ public class ModuleDeserialization {
         return new OfTypeExpression(expr, type);
       }
       case 17: {
+        return readLevel(stream, definitionMap);
+      }
+      case 18: {
         int bytesLen = stream.readInt();
         byte[] bytes = new byte[bytesLen];
         stream.readFully(bytes);
