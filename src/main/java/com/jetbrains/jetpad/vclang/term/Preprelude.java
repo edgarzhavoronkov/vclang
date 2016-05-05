@@ -36,6 +36,10 @@ public class Preprelude extends Namespace {
   public static Constructor ZERO, SUC;
   public static FunctionDefinition NAT_ADD, NAT_MUL;
 
+  public static DataDefinition INT;
+  public static Constructor POS, NEG;
+  public static Condition NEG_ZERO;
+
   public static DataDefinition LVL;
   public static Constructor ZERO_LVL;
   public static Constructor SUC_LVL;
@@ -78,6 +82,16 @@ public class Preprelude extends Namespace {
             clause(ZERO, EmptyDependentLink.getInstance(), Zero()),
             clause(SUC, xPrimeMul, Apps(FunCall(NAT_ADD), Reference(yMul), Apps(FunCall(NAT_MUL), Reference(xPrimeMul), Reference(yMul))))));
     NAT_MUL.setElimTree(mulElimTree);
+
+    /* Int, pos, neg */
+    DefinitionBuilder.Data integer = new DefinitionBuilder.Data(PRE_PRELUDE, "Int", Abstract.Binding.DEFAULT_PRECEDENCE, null, EmptyDependentLink.getInstance());
+    INT = integer.definition();
+    POS = integer.addConstructor("pos", Abstract.Binding.DEFAULT_PRECEDENCE, null, param(DataCall(NAT)));
+    NEG = integer.addConstructor("neg", Abstract.Binding.DEFAULT_PRECEDENCE, null, param(DataCall(NAT)));
+    DependentLink link = param("x", Nat());
+    ElimTreeNode negZeroElimTree = top(link, branch(link, tail(),
+            clause(ZERO, EmptyDependentLink.getInstance(), Apps(ConCall(POS), Zero()))));
+    NEG_ZERO = integer.addCondition(NEG, negZeroElimTree);
 
     /* Lvl, zeroLvl, sucLvl */
     DefinitionBuilder.Data lvl = new DefinitionBuilder.Data(PRE_PRELUDE, "Lvl", Abstract.Binding.DEFAULT_PRECEDENCE, null, EmptyDependentLink.getInstance());
@@ -246,6 +260,12 @@ public class Preprelude extends Namespace {
         myNs.addDefinition(constructor);
         myParentNs.addDefinition(constructor);
         return constructor;
+      }
+
+      Condition addCondition(Constructor construcor, ElimTreeNode elimTreeNode) {
+        Condition condition = new Condition(construcor, elimTreeNode);
+        myDefinition.addCondition(condition);
+        return condition;
       }
     }
 
