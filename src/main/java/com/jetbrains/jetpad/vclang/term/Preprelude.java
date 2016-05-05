@@ -34,11 +34,6 @@ public class Preprelude extends Namespace {
 
   public static DataDefinition NAT;
   public static Constructor ZERO, SUC;
-  public static FunctionDefinition NAT_ADD, NAT_MUL;
-
-  public static DataDefinition INT;
-  public static Constructor POS, NEG;
-  public static Condition NEG_ZERO;
 
   public static DataDefinition LVL;
   public static Constructor ZERO_LVL;
@@ -60,38 +55,6 @@ public class Preprelude extends Namespace {
     NAT = nat.definition();
     ZERO = nat.addConstructor("zero", Abstract.Binding.DEFAULT_PRECEDENCE, null, EmptyDependentLink.getInstance());
     SUC = nat.addConstructor("suc", Abstract.Binding.DEFAULT_PRECEDENCE, null, param(DataCall(NAT)));
-
-    DependentLink xAdd = param("x", Nat());
-    DependentLink yAdd = param("y", Nat());
-    DependentLink addParams = params(xAdd, yAdd);
-    DefinitionBuilder.Function natAdd = new DefinitionBuilder.Function(PRE_PRELUDE, "+", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)6), addParams, Nat(), null);
-    NAT_ADD = natAdd.definition();
-    DependentLink xPrimeAdd = param("x'", Nat());
-    ElimTreeNode addElimTree = top(xAdd, branch(xAdd, tail(yAdd),
-            clause(ZERO, EmptyDependentLink.getInstance(), Reference(yAdd)),
-            clause(SUC, xPrimeAdd, Suc(Apps(FunCall(NAT_ADD), Reference(xPrimeAdd), Reference(yAdd))))));
-    NAT_ADD.setElimTree(addElimTree);
-
-    DependentLink xMul = param("x", Nat());
-    DependentLink yMul = param("y", Nat());
-    DependentLink mulParams = params(xMul, yMul);
-    DefinitionBuilder.Function natMul = new DefinitionBuilder.Function(PRE_PRELUDE, "*", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)7), mulParams, Nat(), null);
-    NAT_MUL = natMul.definition();
-    DependentLink xPrimeMul = param("x'", Nat());
-    ElimTreeNode mulElimTree = top(xMul, branch(xMul, tail(yMul),
-            clause(ZERO, EmptyDependentLink.getInstance(), Zero()),
-            clause(SUC, xPrimeMul, Apps(FunCall(NAT_ADD), Reference(yMul), Apps(FunCall(NAT_MUL), Reference(xPrimeMul), Reference(yMul))))));
-    NAT_MUL.setElimTree(mulElimTree);
-
-    /* Int, pos, neg */
-    DefinitionBuilder.Data integer = new DefinitionBuilder.Data(PRE_PRELUDE, "Int", Abstract.Binding.DEFAULT_PRECEDENCE, null, EmptyDependentLink.getInstance());
-    INT = integer.definition();
-    POS = integer.addConstructor("pos", Abstract.Binding.DEFAULT_PRECEDENCE, null, param(DataCall(NAT)));
-    NEG = integer.addConstructor("neg", Abstract.Binding.DEFAULT_PRECEDENCE, null, param(DataCall(NAT)));
-    DependentLink link = param("x", Nat());
-    ElimTreeNode negZeroElimTree = top(link, branch(link, tail(),
-            clause(ZERO, EmptyDependentLink.getInstance(), Apps(ConCall(POS), Zero()))));
-    NEG_ZERO = integer.addCondition(NEG, negZeroElimTree);
 
     /* Lvl, zeroLvl, sucLvl */
     DefinitionBuilder.Data lvl = new DefinitionBuilder.Data(PRE_PRELUDE, "Lvl", Abstract.Binding.DEFAULT_PRECEDENCE, null, EmptyDependentLink.getInstance());
@@ -169,9 +132,6 @@ public class Preprelude extends Namespace {
     NAT.setUniverse(TypeUniverse.SetOfLevel(0));
     ZERO.setUniverse(TypeUniverse.SetOfLevel(0));
     SUC.setUniverse(TypeUniverse.SetOfLevel(0));
-    INT.setUniverse(TypeUniverse.SetOfLevel(0));
-    POS.setUniverse(TypeUniverse.SetOfLevel(0));
-    NEG.setUniverse(TypeUniverse.SetOfLevel(0));
     LVL.setUniverse(TypeUniverse.SetOfLevel(0));
     ZERO_LVL.setUniverse(TypeUniverse.SetOfLevel(0));
     SUC_LVL.setUniverse(TypeUniverse.SetOfLevel(0));

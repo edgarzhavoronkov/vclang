@@ -16,6 +16,9 @@ import com.jetbrains.jetpad.vclang.term.pattern.elimtree.ElimTreeNode;
 import java.util.Collection;
 import java.util.EnumSet;
 
+import static com.jetbrains.jetpad.vclang.term.Preprelude.NAT;
+import static com.jetbrains.jetpad.vclang.term.Preprelude.SUC;
+import static com.jetbrains.jetpad.vclang.term.Preprelude.ZERO;
 import static com.jetbrains.jetpad.vclang.term.expr.ExpressionFactory.*;
 
 public class Prelude extends Namespace {
@@ -29,6 +32,12 @@ public class Prelude extends Namespace {
   public static ClassDefinition PRELUDE_CLASS;
 
   public static Namespace PRELUDE = new Prelude();
+
+  public static FunctionDefinition NAT_ADD, NAT_MUL;
+
+  public static DataDefinition INT;
+  public static Constructor POS, NEG;
+  public static Condition NEG_ZERO;
 
   public static FunctionDefinition COERCE;
 
@@ -48,6 +57,39 @@ public class Prelude extends Namespace {
   static {
     PRELUDE_CLASS = new ClassDefinition(new ModuleResolvedName(moduleID), null);
     Preprelude.setUniverses();
+
+    /* Nat arithmetics */
+    DependentLink xAdd = param("x", Nat());
+    DependentLink yAdd = param("y", Nat());
+    DependentLink addParams = params(xAdd, yAdd);
+    Preprelude.DefinitionBuilder.Function natAdd = new Preprelude.DefinitionBuilder.Function(PRELUDE, "+", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)6), addParams, Nat(), null);
+    NAT_ADD = natAdd.definition();
+    DependentLink xPrimeAdd = param("x'", Nat());
+    ElimTreeNode addElimTree = top(xAdd, branch(xAdd, tail(yAdd),
+            clause(ZERO, EmptyDependentLink.getInstance(), Reference(yAdd)),
+            clause(SUC, xPrimeAdd, Suc(Apps(FunCall(NAT_ADD), Reference(xPrimeAdd), Reference(yAdd))))));
+    NAT_ADD.setElimTree(addElimTree);
+
+    DependentLink xMul = param("x", Nat());
+    DependentLink yMul = param("y", Nat());
+    DependentLink mulParams = params(xMul, yMul);
+    Preprelude.DefinitionBuilder.Function natMul = new Preprelude.DefinitionBuilder.Function(PRELUDE, "*", new Abstract.Definition.Precedence(Abstract.Binding.Associativity.LEFT_ASSOC, (byte)7), mulParams, Nat(), null);
+    NAT_MUL = natMul.definition();
+    DependentLink xPrimeMul = param("x'", Nat());
+    ElimTreeNode mulElimTree = top(xMul, branch(xMul, tail(yMul),
+            clause(ZERO, EmptyDependentLink.getInstance(), Zero()),
+            clause(SUC, xPrimeMul, Apps(FunCall(NAT_ADD), Reference(yMul), Apps(FunCall(NAT_MUL), Reference(xPrimeMul), Reference(yMul))))));
+    NAT_MUL.setElimTree(mulElimTree);
+
+    /* Int, pos, neg */
+    Preprelude.DefinitionBuilder.Data integer = new Preprelude.DefinitionBuilder.Data(PRELUDE, "Int", Abstract.Binding.DEFAULT_PRECEDENCE, TypeUniverse.SetOfLevel(0), EmptyDependentLink.getInstance());
+    INT = integer.definition();
+    POS = integer.addConstructor("pos", Abstract.Binding.DEFAULT_PRECEDENCE, TypeUniverse.SetOfLevel(0), param(DataCall(NAT)));
+    NEG = integer.addConstructor("neg", Abstract.Binding.DEFAULT_PRECEDENCE, TypeUniverse.SetOfLevel(0), param(DataCall(NAT)));
+    DependentLink link = param("x", Nat());
+    ElimTreeNode negZeroElimTree = top(link, branch(link, tail(),
+            clause(ZERO, EmptyDependentLink.getInstance(), Apps(ConCall(POS), Zero()))));
+    NEG_ZERO = integer.addCondition(NEG, negZeroElimTree);
 
     /* Path */
     DependentLink PathParameter1 = param(false, "lp", Lvl());

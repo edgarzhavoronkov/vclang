@@ -1,6 +1,7 @@
 package com.jetbrains.jetpad.vclang.term.expr;
 
 import com.jetbrains.jetpad.vclang.naming.NamespaceMember;
+import com.jetbrains.jetpad.vclang.term.Prelude;
 import com.jetbrains.jetpad.vclang.term.Preprelude;
 import com.jetbrains.jetpad.vclang.term.definition.DataDefinition;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class IntExpressionTest {
             "  | neg2 zero => pos2 zero\n"
     );
     DataDefinition data = (DataDefinition) member.namespace.getMember("Int2").definition;
-    DataDefinition data2 = Preprelude.INT;
+    DataDefinition data2 = Prelude.INT;
     System.err.println(data);
 
   }
