@@ -83,7 +83,7 @@ public class PiExpression extends Expression implements Type {
 
   @Override
   public PiExpression normalize(NormalizeVisitor.Mode mode) {
-    return new NormalizeVisitor().visitPi(this, mode);
+    return NormalizeVisitor.normalize(this, mode);
   }
 
   @Override

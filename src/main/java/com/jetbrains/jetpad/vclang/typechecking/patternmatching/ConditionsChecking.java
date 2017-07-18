@@ -16,7 +16,6 @@ import com.jetbrains.jetpad.vclang.core.pattern.Pattern;
 import com.jetbrains.jetpad.vclang.core.pattern.Patterns;
 import com.jetbrains.jetpad.vclang.core.sort.Sort;
 import com.jetbrains.jetpad.vclang.core.subst.ExprSubstitution;
-import com.jetbrains.jetpad.vclang.core.subst.LevelSubstitution;
 import com.jetbrains.jetpad.vclang.term.Prelude;
 import com.jetbrains.jetpad.vclang.typechecking.error.LocalErrorReporter;
 import com.jetbrains.jetpad.vclang.typechecking.error.local.ConditionsError;
@@ -185,7 +184,7 @@ public class ConditionsChecking {
     for (Pair<List<Expression>, ExprSubstitution> pair : collectPatterns(clause.patterns)) {
       Expression evaluatedExpr1;
       if (definition == null) {
-        evaluatedExpr1 = new NormalizeVisitor().eval(elimTree, pair.proj1, new ExprSubstitution(), LevelSubstitution.EMPTY);
+        evaluatedExpr1 = NormalizeVisitor.eval(elimTree, pair.proj1);
       } else {
         evaluatedExpr1 = definition.getDefCall(Sort.STD, null, pair.proj1).normalize(NormalizeVisitor.Mode.NF);
       }

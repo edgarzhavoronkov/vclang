@@ -95,7 +95,7 @@ public abstract class Expression implements ExpectedType {
 
   @Override
   public Expression normalize(NormalizeVisitor.Mode mode) {
-    return accept(new NormalizeVisitor(), mode);
+    return NormalizeVisitor.normalize(this, mode);
   }
 
   public static boolean compare(Expression expr1, Expression expr2, Equations.CMP cmp) {

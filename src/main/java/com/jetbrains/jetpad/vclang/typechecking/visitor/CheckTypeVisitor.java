@@ -327,14 +327,14 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
   }
 
   public boolean compare(Result result, Expression expectedType, Abstract.Expression expr) {
-    Expression actualType = result.type.normalize(NormalizeVisitor.Mode.WHNF);
-    expectedType = expectedType.normalize(NormalizeVisitor.Mode.WHNF);
-    if (actualType.isLessOrEquals(expectedType, myEquations, expr)) {
-      result.expression = OfTypeExpression.make(result.expression, actualType, expectedType);
+    Expression actualTypeNorm = result.type.normalize(NormalizeVisitor.Mode.WHNF);
+    Expression expectedTypeNorm = expectedType.normalize(NormalizeVisitor.Mode.WHNF);
+    if (actualTypeNorm.isLessOrEquals(expectedTypeNorm, myEquations, expr)) {
+      result.expression = OfTypeExpression.make(result.expression, actualTypeNorm, expectedTypeNorm);
       return true;
     }
 
-    LocalTypeCheckingError error = new TypeMismatchError(expectedType.normalize(NormalizeVisitor.Mode.HUMAN_NF), result.type.normalize(NormalizeVisitor.Mode.HUMAN_NF), expr);
+    LocalTypeCheckingError error = new TypeMismatchError(expectedTypeNorm.normalize(NormalizeVisitor.Mode.RNF), actualTypeNorm.normalize(NormalizeVisitor.Mode.RNF), expr);
     expr.setWellTyped(myContext, new ErrorExpression(result.expression, error));
     myErrorReporter.report(error);
     return false;
@@ -389,7 +389,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
     // TODO: if result.type is stuck, add an equation
     UniverseExpression universe = result.type.normalize(NormalizeVisitor.Mode.WHNF).checkedCast(UniverseExpression.class);
     if (universe == null) {
-      LocalTypeCheckingError error = new TypeMismatchError(new StringPrettyPrintable("a universe"), result.type.normalize(NormalizeVisitor.Mode.HUMAN_NF), expr);
+      LocalTypeCheckingError error = new TypeMismatchError(new StringPrettyPrintable("a universe"), result.type.normalize(NormalizeVisitor.Mode.RNF), expr);
       expr.setWellTyped(myContext, new ErrorExpression(result.expression, error));
       myErrorReporter.report(error);
       return null;
@@ -406,7 +406,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
 
   private boolean compareExpressions(boolean isLeft, Result result, Expression expected, Expression actual, Abstract.Expression expr) {
     if (!CompareVisitor.compare(myEquations, Equations.CMP.EQ, expected.normalize(NormalizeVisitor.Mode.NF), actual.normalize(NormalizeVisitor.Mode.NF), expr)) {
-      LocalTypeCheckingError error = new PathEndpointMismatchError(isLeft, expected.normalize(NormalizeVisitor.Mode.HUMAN_NF), actual.normalize(NormalizeVisitor.Mode.HUMAN_NF), expr);
+      LocalTypeCheckingError error = new PathEndpointMismatchError(isLeft, expected.normalize(NormalizeVisitor.Mode.RNF), actual.normalize(NormalizeVisitor.Mode.RNF), expr);
       expr.setWellTyped(myContext, new ErrorExpression(result.expression, error));
       myErrorReporter.report(error);
       return false;
@@ -593,7 +593,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
           PiExpression piExpectedType = expectedType.cast(PiExpression.class);
           Expression argExpectedType = piExpectedType.getParameters().getTypeExpr().subst(substitution);
           if (!CompareVisitor.compare(myEquations, Equations.CMP.EQ, argExpectedType.normalize(NormalizeVisitor.Mode.NF), argExpr, paramType)) {
-            LocalTypeCheckingError error = new TypeMismatchError(argExpectedType.normalize(NormalizeVisitor.Mode.HUMAN_NF), argType.normalize(NormalizeVisitor.Mode.HUMAN_NF), paramType);
+            LocalTypeCheckingError error = new TypeMismatchError(argExpectedType.normalize(NormalizeVisitor.Mode.RNF), argType.normalize(NormalizeVisitor.Mode.RNF), paramType);
             myErrorReporter.report(error);
             return null;
           }
@@ -647,7 +647,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
       if (result != null) {
         expr.setWellTyped(myContext, result.expression);
         if (expectedType != null && !(expectedType instanceof Expression)) {
-          LocalTypeCheckingError error = new TypeMismatchError(expectedType, result.type.normalize(NormalizeVisitor.Mode.HUMAN_NF), expr);
+          LocalTypeCheckingError error = new TypeMismatchError(expectedType, result.type.normalize(NormalizeVisitor.Mode.RNF), expr);
           myErrorReporter.report(error);
           return null;
         }
@@ -753,7 +753,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
 
   @Override
   public Result visitError(Abstract.ErrorExpression expr, ExpectedType expectedType) {
-    LocalTypeCheckingError error = new GoalError(myContext, expectedType == null ? null : expectedType.normalize(NormalizeVisitor.Mode.HUMAN_NF), expr);
+    LocalTypeCheckingError error = new GoalError(myContext, expectedType == null ? null : expectedType.normalize(NormalizeVisitor.Mode.RNF), expr);
     Expression result = new ErrorExpression(null, error);
     expr.setWellTyped(myContext, result);
     myErrorReporter.report(error);

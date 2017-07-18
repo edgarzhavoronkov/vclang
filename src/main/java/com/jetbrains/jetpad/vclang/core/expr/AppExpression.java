@@ -3,8 +3,8 @@ package com.jetbrains.jetpad.vclang.core.expr;
 import com.jetbrains.jetpad.vclang.core.expr.visitor.ExpressionVisitor;
 
 public class AppExpression extends Expression {
-  private final Expression myFunction;
-  private final Expression myArgument;
+  private Expression myFunction;
+  private Expression myArgument;
 
   public AppExpression(Expression function, Expression argument) {
     myFunction = function;
@@ -17,6 +17,14 @@ public class AppExpression extends Expression {
 
   public Expression getArgument() {
     return myArgument;
+  }
+
+  public void setFunction(Expression function) {
+    myFunction = function;
+  }
+
+  public void setArgument(Expression argument) {
+    myArgument = argument;
   }
 
   @Override
