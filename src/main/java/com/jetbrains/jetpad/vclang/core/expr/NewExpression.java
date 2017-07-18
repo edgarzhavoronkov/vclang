@@ -3,7 +3,7 @@ package com.jetbrains.jetpad.vclang.core.expr;
 import com.jetbrains.jetpad.vclang.core.expr.visitor.ExpressionVisitor;
 
 public class NewExpression extends Expression {
-  private final ClassCallExpression myExpression;
+  private ClassCallExpression myExpression;
 
   public NewExpression(ClassCallExpression expression) {
     myExpression = expression;
@@ -11,6 +11,10 @@ public class NewExpression extends Expression {
 
   public ClassCallExpression getExpression() {
     return myExpression;
+  }
+
+  public void setExpression(ClassCallExpression expression) {
+    myExpression = expression;
   }
 
   @Override

@@ -22,7 +22,7 @@ import java.util.Set;
 public class PiExpression extends Expression implements Type {
   private final Sort myResultSort;
   private final SingleDependentLink myLink;
-  private final Expression myCodomain;
+  private Expression myCodomain;
 
   public PiExpression(Sort resultSort, SingleDependentLink link, Expression codomain) {
     assert link.hasNext();
@@ -54,6 +54,10 @@ public class PiExpression extends Expression implements Type {
 
   public Expression getCodomain() {
     return myCodomain;
+  }
+
+  public void setCodomain(Expression codomain) {
+    myCodomain = codomain;
   }
 
   @Override

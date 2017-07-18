@@ -1081,7 +1081,7 @@ public class CheckTypeVisitor implements AbstractExpressionVisitor<ExpectedType,
     Expression normExpr = exprResult.expression.normalize(NormalizeVisitor.Mode.WHNF);
     ClassCallExpression classCallExpr = normExpr.checkedCast(ClassCallExpression.class);
     if (classCallExpr == null) {
-      classCallExpr = normExpr.isInstance(ErrorExpression.class) ? normExpr.cast(ErrorExpression.class).getExpr().normalize(NormalizeVisitor.Mode.WHNF).checkedCast(ClassCallExpression.class) : null;
+      classCallExpr = normExpr.isInstance(ErrorExpression.class) ? normExpr.cast(ErrorExpression.class).getExpression().normalize(NormalizeVisitor.Mode.WHNF).checkedCast(ClassCallExpression.class) : null;
       if (classCallExpr == null) {
         LocalTypeCheckingError error = new LocalTypeCheckingError("Expected a class", expr.getExpression());
         expr.setWellTyped(myContext, new ErrorExpression(normExpr, error));

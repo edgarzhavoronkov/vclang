@@ -403,7 +403,7 @@ public class ToAbstractVisitor extends BaseExpressionVisitor<Void, Abstract.Expr
 
   @Override
   public Abstract.Expression visitError(ErrorExpression expr, Void params) {
-    return myFactory.makeError(expr.getExpr() == null ? null : expr.getExpr().accept(this, null));
+    return myFactory.makeError(expr.getExpression() == null ? null : expr.getExpression().accept(this, null));
   }
 
   @Override

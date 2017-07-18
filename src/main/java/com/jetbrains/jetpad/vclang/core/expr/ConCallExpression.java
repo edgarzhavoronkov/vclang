@@ -34,6 +34,11 @@ public class ConCallExpression extends DefCallExpression {
   }
 
   @Override
+  public void setDefCallArgument(int index, Expression argument) {
+    myArguments.set(index, argument);
+  }
+
+  @Override
   public Constructor getDefinition() {
     return (Constructor) super.getDefinition();
   }

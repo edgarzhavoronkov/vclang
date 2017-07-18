@@ -16,6 +16,8 @@ import com.jetbrains.jetpad.vclang.core.pattern.Pattern;
 import com.jetbrains.jetpad.vclang.core.pattern.Patterns;
 import com.jetbrains.jetpad.vclang.core.sort.Sort;
 import com.jetbrains.jetpad.vclang.core.subst.ExprSubstitution;
+import com.jetbrains.jetpad.vclang.core.subst.LevelSubstitution;
+import com.jetbrains.jetpad.vclang.core.subst.SubstVisitor;
 import com.jetbrains.jetpad.vclang.term.Prelude;
 import com.jetbrains.jetpad.vclang.typechecking.error.LocalErrorReporter;
 import com.jetbrains.jetpad.vclang.typechecking.error.local.ConditionsError;
@@ -246,10 +248,10 @@ public class ConditionsChecking {
         Pattern pattern1 = conPattern.getArguments().get(prefixLength + i);
         if (pattern1 instanceof BindingPattern) {
           if (elim.getCases().get(i).proj1 != null) {
-            result.add(new Pair<>(elim.getCases().get(i).proj1.subst(substitution), new ExprSubstitution(((BindingPattern) pattern1).getBinding(), ExpressionFactory.Left())));
+            result.add(new Pair<>(elim.getCases().get(i).proj1.accept(new SubstVisitor(substitution, LevelSubstitution.EMPTY), null), new ExprSubstitution(((BindingPattern) pattern1).getBinding(), ExpressionFactory.Left())));
           }
           if (elim.getCases().get(i).proj2 != null) {
-            result.add(new Pair<>(elim.getCases().get(i).proj2.subst(substitution), new ExprSubstitution(((BindingPattern) pattern1).getBinding(), ExpressionFactory.Right())));
+            result.add(new Pair<>(elim.getCases().get(i).proj2.accept(new SubstVisitor(substitution, LevelSubstitution.EMPTY), null), new ExprSubstitution(((BindingPattern) pattern1).getBinding(), ExpressionFactory.Right())));
           }
         } else
         if (pattern1 instanceof ConstructorPattern && (((ConstructorPattern) pattern1).getConstructor() == Prelude.LEFT || ((ConstructorPattern) pattern1).getConstructor() == Prelude.RIGHT)) {
@@ -263,7 +265,7 @@ public class ConditionsChecking {
             continue;
           }
 
-          result.add(new Pair<>(expr.subst(substitution), new ExprSubstitution()));
+          result.add(new Pair<>(expr.accept(new SubstVisitor(substitution, LevelSubstitution.EMPTY), null), new ExprSubstitution()));
         }
       }
     }
@@ -272,7 +274,7 @@ public class ConditionsChecking {
       ExprSubstitution substitution1 = new ExprSubstitution();
       ExprSubstitution substitution2 = new ExprSubstitution();
       if (conPattern.getPatterns().unify(new Patterns(clause.patterns), substitution1, substitution2)) {
-        result.add(new Pair<>(clause.expression.subst(substitution2), substitution1));
+        result.add(new Pair<>(clause.expression.accept(new SubstVisitor(substitution2, LevelSubstitution.EMPTY), null), substitution1));
       }
     }
 

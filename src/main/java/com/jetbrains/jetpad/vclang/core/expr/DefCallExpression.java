@@ -20,6 +20,10 @@ public abstract class DefCallExpression extends Expression {
     return Collections.emptyList();
   }
 
+  public void setDefCallArgument(int index, Expression argument) {
+    throw new IllegalStateException();
+  }
+
   public abstract Sort getSortArgument();
 
   public Definition getDefinition() {

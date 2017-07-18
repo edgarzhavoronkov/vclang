@@ -13,8 +13,12 @@ public class TupleExpression extends Expression {
     myType = type;
   }
 
-  public List<Expression> getFields() {
+  public List<? extends Expression> getFields() {
     return myFields;
+  }
+
+  public void setField(int index, Expression field) {
+    myFields.set(index, field);
   }
 
   public SigmaExpression getSigmaType() {

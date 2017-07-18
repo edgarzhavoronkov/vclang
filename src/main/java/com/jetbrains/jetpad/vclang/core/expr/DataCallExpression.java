@@ -39,6 +39,11 @@ public class DataCallExpression extends DefCallExpression implements Type {
   }
 
   @Override
+  public void setDefCallArgument(int index, Expression argument) {
+    myArguments.set(index, argument);
+  }
+
+  @Override
   public DataDefinition getDefinition() {
     return (DataDefinition) super.getDefinition();
   }

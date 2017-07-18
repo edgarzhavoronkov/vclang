@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class FieldCallExpression extends DefCallExpression {
-  private final Expression myExpression;
+  private Expression myExpression;
 
   public FieldCallExpression(ClassField definition, Expression expression) {
     super(definition);
@@ -22,6 +22,14 @@ public class FieldCallExpression extends DefCallExpression {
   @Override
   public List<? extends Expression> getDefCallArguments() {
     return Collections.singletonList(myExpression);
+  }
+
+  @Override
+  public void setDefCallArgument(int index, Expression argument) {
+    if (index > 0) {
+      throw new IllegalStateException();
+    }
+    myExpression = argument;
   }
 
   @Override

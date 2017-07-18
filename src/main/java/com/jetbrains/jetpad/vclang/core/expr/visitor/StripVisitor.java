@@ -156,7 +156,7 @@ public class StripVisitor implements ExpressionVisitor<Void, Expression> {
 
   @Override
   public ErrorExpression visitError(ErrorExpression expr, Void params) {
-    return new ErrorExpression(expr.getExpr() == null ? null : expr.getExpr().accept(this, null), expr.getError());
+    return new ErrorExpression(expr.getExpression() == null ? null : expr.getExpression().accept(this, null), expr.getError());
   }
 
   @Override
@@ -192,14 +192,14 @@ public class StripVisitor implements ExpressionVisitor<Void, Expression> {
 
   @Override
   public Expression visitCase(CaseExpression expr, Void params) {
-    ElimTree elimTree = stripElimTree(expr.getElimTree());
+    expr.setElimTree(stripElimTree(expr.getElimTree()));
     for (int i = 0; i < expr.getArguments().size(); i++) {
-      expr.getArguments().set(i, expr.getArguments().get(i).accept(this, null));
+      expr.setArgument(i, expr.getArguments().get(i).accept(this, null));
     }
     visitArguments(expr.getParameters());
-    Expression type = expr.getResultType().accept(this, null);
+    expr.setResultType(expr.getResultType().accept(this, null));
     freeArguments(expr.getParameters());
-    return new CaseExpression(expr.getParameters(), type, elimTree, expr.getArguments());
+    return expr;
   }
 
   private ElimTree stripElimTree(ElimTree elimTree) {

@@ -27,6 +27,11 @@ public class FunCallExpression extends DefCallExpression {
   }
 
   @Override
+  public void setDefCallArgument(int index, Expression argument) {
+    myArguments.set(index, argument);
+  }
+
+  @Override
   public FunctionDefinition getDefinition() {
     return (FunctionDefinition) super.getDefinition();
   }

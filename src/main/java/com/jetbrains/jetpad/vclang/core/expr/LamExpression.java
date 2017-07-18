@@ -7,7 +7,7 @@ import com.jetbrains.jetpad.vclang.core.sort.Sort;
 public class LamExpression extends Expression {
   private final Sort myResultSort;
   private final SingleDependentLink myLink;
-  private final Expression myBody;
+  private Expression myBody;
 
   public LamExpression(Sort resultSort, SingleDependentLink link, Expression body) {
     myResultSort = resultSort;
@@ -25,6 +25,10 @@ public class LamExpression extends Expression {
 
   public Expression getBody() {
     return myBody;
+  }
+
+  public void setBody(Expression body) {
+    myBody = body;
   }
 
   @Override

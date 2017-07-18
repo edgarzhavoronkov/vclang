@@ -8,8 +8,8 @@ import java.util.List;
 
 public class CaseExpression extends Expression {
   private final DependentLink myParameters;
-  private final Expression myResultType;
-  private final ElimTree myElimTree;
+  private Expression myResultType;
+  private ElimTree myElimTree;
   private final List<Expression> myArguments;
 
   public CaseExpression(DependentLink parameters, Expression resultType, ElimTree elimTree, List<Expression> arguments) {
@@ -27,12 +27,24 @@ public class CaseExpression extends Expression {
     return myResultType;
   }
 
+  public void setResultType(Expression type) {
+    myResultType = type;
+  }
+
   public ElimTree getElimTree() {
     return myElimTree;
   }
 
-  public List<Expression> getArguments() {
+  public void setElimTree(ElimTree elimTree) {
+    myElimTree = elimTree;
+  }
+
+  public List<? extends Expression> getArguments() {
     return myArguments;
+  }
+
+  public void setArgument(int index, Expression argument) {
+    myArguments.set(index, argument);
   }
 
   @Override

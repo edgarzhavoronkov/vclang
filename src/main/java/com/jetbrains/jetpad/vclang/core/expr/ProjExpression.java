@@ -3,7 +3,7 @@ package com.jetbrains.jetpad.vclang.core.expr;
 import com.jetbrains.jetpad.vclang.core.expr.visitor.ExpressionVisitor;
 
 public class ProjExpression extends Expression {
-  private final Expression myExpression;
+  private Expression myExpression;
   private final int myField;
 
   public ProjExpression(Expression expression, int field) {
@@ -13,6 +13,10 @@ public class ProjExpression extends Expression {
 
   public Expression getExpression() {
     return myExpression;
+  }
+
+  public void setExpression(Expression expression) {
+    myExpression = expression;
   }
 
   public int getField() {

@@ -30,7 +30,7 @@ public class ClassCallExpression extends DefCallExpression implements Type {
     myFieldSet = definition.getFieldSet();
   }
 
-  public ClassCallExpression(ClassDefinition definition, Sort sortArgument, ReadonlyFieldSet fieldSet) {
+  public ClassCallExpression(ClassDefinition definition, Sort sortArgument, FieldSet fieldSet) {
     super(definition);
     mySortArgument = sortArgument;
     myFieldSet = fieldSet;
